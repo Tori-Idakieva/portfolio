@@ -27,7 +27,7 @@ The AI endpoint is public, so it is treated as untrusted input that costs money.
 | --- | --- | --- |
 | Script injection | Every piece of user and model text is rendered as React text, never HTML. AI citations only link to known evidence ids. | `Assistant.tsx`, `Terminal.tsx` |
 | Terminal input | NFKC normalised, printable ASCII only, 40 characters, matched against a fixed command list. | `Terminal.tsx` |
-| Third-party scripts and framing | Strict Content Security Policy (self only), `X-Frame-Options: DENY`, `nosniff`, a locked-down Permissions-Policy. | `next.config.ts` |
+| Third-party scripts and framing | Content Security Policy with a fresh nonce per request and `'strict-dynamic'` (no `'unsafe-inline'` scripts), a deny-all policy on the API, `X-Frame-Options: DENY`, `nosniff` and a locked-down Permissions-Policy. | `middleware.ts`, `next.config.ts` |
 | Cross-site use of the API | Same-origin check, JSON content type required, 16 KB body cap before parsing. | `api/ask/route.ts` |
 | Malformed input | Zod schemas with length limits on every field. | `lib/ai.ts` |
 | Prompt injection | Visitor text is wrapped and labelled as data. The model answers only from the profile, never reveals contact details beyond the public ones, and job matches are validated against a schema. Invented evidence ids are removed. | `lib/ai.ts` |
