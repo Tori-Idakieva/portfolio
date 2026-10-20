@@ -344,9 +344,9 @@ function Row({ item, role, onFilter, showOrg }: { item: Evidence; role: Role; on
   const weight = role === "all" ? null : item.weight[role];
   const why = role === "all" ? null : item.why?.[role];
 
-  // Arriving here (a citation, stat or certificate link, or a shared /#id link) opens the row and
-  // briefly lights it up so the eye finds it. These are plain anchor links, so the browser's back
-  // button returns the visitor to where they were.
+  // Arriving here from a citation, stat or certificate link opens the row and briefly lights it up
+  // so the eye finds it. The jump scrolls within the page without touching the address or history,
+  // so the browser's back button still means "leave this page".
   useEffect(() => {
     const arrive = () => {
       setOpen(true);
@@ -355,18 +355,36 @@ function Row({ item, role, onFilter, showOrg }: { item: Evidence; role: Role; on
         easing: "ease-out",
       });
     };
-    // Clicking a link to this row again leaves the hash unchanged, so listen for the click too.
+    const scrollHere = (behavior: ScrollBehavior) =>
+      document.getElementById(item.id)?.scrollIntoView({ behavior: reducedMotion() ? "auto" : behavior, block: "start" });
     const onClick = (e: MouseEvent) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
       const link = (e.target as Element | null)?.closest?.("a[href^='#']");
-      if (link?.getAttribute("href") === `#${item.id}`) arrive();
+      if (link?.getAttribute("href") !== `#${item.id}`) return;
+      e.preventDefault();
+      scrollHere("smooth");
+      arrive();
     };
+    // A shared link such as /#study-msc still lands here. Wait for the page to settle so the
+    // highlight is seen, then tidy the address.
+    let timer = 0;
     const onHash = () => {
-      if (window.location.hash === `#${item.id}`) arrive();
+      if (window.location.hash !== `#${item.id}`) return;
+      timer = window.setTimeout(() => {
+        scrollHere("auto");
+        arrive();
+        try {
+          window.history.replaceState(null, "", window.location.pathname + window.location.search);
+        } catch {
+          // Some embedded viewers block history changes; the row still opens.
+        }
+      }, 450);
     };
     onHash();
     document.addEventListener("click", onClick);
     window.addEventListener("hashchange", onHash);
     return () => {
+      window.clearTimeout(timer);
       document.removeEventListener("click", onClick);
       window.removeEventListener("hashchange", onHash);
     };
