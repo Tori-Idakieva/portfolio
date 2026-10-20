@@ -21,11 +21,6 @@ export const maxDuration = 30;
 
 const client = new Anthropic({ timeout: LIMITS.timeoutMs, maxRetries: 1 });
 
-// Server-side refusal fallbacks are only offered on these model families.
-const fallbackParams = /^claude-(opus|fable|sonnet)-5/.test(MODEL)
-  ? { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" as const }
-  : {};
-
 const system: Anthropic.Beta.BetaTextBlockParam[] = [
   { type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral", ttl: "1h" } },
 ];
@@ -37,7 +32,8 @@ function unavailable(reason: Unavailable, status = 200) {
 // Logged to the Vercel function logs so failures can be diagnosed. Never includes the API key.
 function upstreamReason(err: unknown): Unavailable {
   if (err instanceof Anthropic.APIError) {
-    console.error(`[ask] Anthropic API error ${err.status ?? "?"}: ${err.message}`);
+    const detail = err.error && typeof err.error === "object" ? JSON.stringify((err.error as { error?: unknown }).error ?? err.error) : err.message;
+    console.error(`[ask] Anthropic API error ${err.status ?? "?"}: ${detail}`);
   } else {
     console.error(`[ask] Anthropic request failed: ${err instanceof Error ? err.message : String(err)}`);
   }
@@ -117,7 +113,6 @@ export async function POST(req: Request) {
           output_config: { effort: "low", format: zodOutputFormat(MatchOutput) },
           system,
           messages: [{ role: "user", content: matchPrompt(input.job, fewer) }],
-          ...fallbackParams,
         });
         await recordUsage(res.usage);
         if (res.stop_reason === "refusal") return unavailable("match_failed");
@@ -139,7 +134,6 @@ export async function POST(req: Request) {
     output_config: { effort: "low" },
     system,
     messages: [{ role: "user", content }],
-    ...fallbackParams,
   });
 
   // Wait for the first event so connection errors become a clean JSON response.
