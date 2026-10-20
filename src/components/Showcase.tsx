@@ -266,7 +266,6 @@ export function EvidenceList({ role, filter, onFilter }: { role: Role; filter: F
 
   return (
     <section className="evidence wrap" id="work" aria-labelledby="evidence-title">
-      <JumpBack />
       <div className="section-head">
         <p className="label">Experience</p>
         <h2 id="evidence-title">{role === "all" ? "What Viktoria has done, and where" : <>Strongest for {ROLE_LABELS[role]}</>}</h2>
@@ -339,85 +338,15 @@ export function EvidenceList({ role, filter, onFilter }: { role: Role; filter: F
   );
 }
 
-// Jumping to a work item from a citation, stat or certificate link. The link's place on screen
-// is remembered so a floating Back button can put it back exactly where it was, the way footnote
-// back-links and "back to results" buttons work. It is anchored to the link, not to a scroll
-// position, because opening the row can push the rest of the page down.
-function JumpBack() {
-  const [trip, setTrip] = useState<{ link: HTMLElement; top: number } | null>(null);
-  const [away, setAway] = useState(false);
-
-  useEffect(() => {
-    const onClick = (e: MouseEvent) => {
-      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-      const link = (e.target as Element | null)?.closest?.<HTMLAnchorElement>("a[href^='#']");
-      const id = link?.getAttribute("href")?.slice(1);
-      const row = id ? document.getElementById(id) : null;
-      if (!link || !row?.classList.contains("row")) return;
-      e.preventDefault();
-      setAway(false);
-      setTrip({ link, top: link.getBoundingClientRect().top });
-      window.dispatchEvent(new CustomEvent("evidence:jump", { detail: id }));
-      // Wait a frame so the row has opened before measuring where to scroll.
-      requestAnimationFrame(() => {
-        row.scrollIntoView({ behavior: reducedMotion() ? "auto" : "smooth", block: "start" });
-        row.querySelector<HTMLElement>(".row-head")?.focus({ preventScroll: true });
-      });
-    };
-    document.addEventListener("click", onClick);
-    return () => document.removeEventListener("click", onClick);
-  }, []);
-
-  useEffect(() => {
-    if (!trip) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setTrip(null);
-    };
-    // Shown only while the link is out of view. Scrolling back to it yourself ends the trip.
-    let seenAway = false;
-    const io = new IntersectionObserver(([entry]) => {
-      if (!entry.isIntersecting) {
-        seenAway = true;
-        setAway(true);
-      } else if (seenAway) {
-        setTrip(null);
-      }
-    });
-    io.observe(trip.link);
-    window.addEventListener("keydown", onKey);
-    return () => {
-      io.disconnect();
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [trip]);
-
-  const goBack = () => {
-    if (!trip) return;
-    const { link, top } = trip;
-    setTrip(null);
-    if (!link.isConnected) return;
-    const y = window.scrollY + link.getBoundingClientRect().top - top;
-    window.scrollTo({ top: Math.max(0, y), behavior: reducedMotion() ? "auto" : "smooth" });
-    link.focus({ preventScroll: true });
-  };
-
-  if (!trip || !away) return null;
-  return createPortal(
-    <button type="button" className="back-float" aria-label="Back to where you were" onClick={goBack}>
-      Back
-    </button>,
-    document.body,
-  );
-}
-
 function Row({ item, role, onFilter, showOrg }: { item: Evidence; role: Role; onFilter: (f: Filter) => void; showOrg: boolean }) {
   const [open, setOpen] = useState(false);
   const flashRef = useRef<HTMLSpanElement>(null);
   const weight = role === "all" ? null : item.weight[role];
   const why = role === "all" ? null : item.why?.[role];
 
-  // Arriving here (a jump link, or a shared /#id link) opens the row and briefly lights it up,
-  // so the eye finds it. The light fades by itself; nothing needs clearing.
+  // Arriving here (a citation, stat or certificate link, or a shared /#id link) opens the row and
+  // briefly lights it up so the eye finds it. These are plain anchor links, so the browser's back
+  // button returns the visitor to where they were.
   useEffect(() => {
     const arrive = () => {
       setOpen(true);
@@ -426,17 +355,19 @@ function Row({ item, role, onFilter, showOrg }: { item: Evidence; role: Role; on
         easing: "ease-out",
       });
     };
-    const onJump = (e: Event) => {
-      if ((e as CustomEvent<string>).detail === item.id) arrive();
+    // Clicking a link to this row again leaves the hash unchanged, so listen for the click too.
+    const onClick = (e: MouseEvent) => {
+      const link = (e.target as Element | null)?.closest?.("a[href^='#']");
+      if (link?.getAttribute("href") === `#${item.id}`) arrive();
     };
     const onHash = () => {
       if (window.location.hash === `#${item.id}`) arrive();
     };
     onHash();
-    window.addEventListener("evidence:jump", onJump);
+    document.addEventListener("click", onClick);
     window.addEventListener("hashchange", onHash);
     return () => {
-      window.removeEventListener("evidence:jump", onJump);
+      document.removeEventListener("click", onClick);
       window.removeEventListener("hashchange", onHash);
     };
   }, [item.id]);
