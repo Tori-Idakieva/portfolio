@@ -339,14 +339,13 @@ export function EvidenceList({ role, filter, onFilter }: { role: Role; filter: F
   );
 }
 
-// Jumping to a work item from a citation, stat or certificate link. The link's own position is
-// remembered so a floating Back button can return there, the way footnote back-links and
-// "back to results" buttons work. The jump is a real history entry, so the browser's back
-// button and the phone's back gesture do the same thing.
+// Jumping to a work item from a citation, stat or certificate link. The link's place on screen
+// is remembered so a floating Back button can put it back exactly where it was, the way footnote
+// back-links and "back to results" buttons work. It is anchored to the link, not to a scroll
+// position, because opening the row can push the rest of the page down.
 function JumpBack() {
-  const [origin, setOrigin] = useState<HTMLElement | null>(null);
+  const [trip, setTrip] = useState<{ link: HTMLElement; top: number } | null>(null);
   const [away, setAway] = useState(false);
-  const pushedRef = useRef(false);
 
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
@@ -356,37 +355,23 @@ function JumpBack() {
       const row = id ? document.getElementById(id) : null;
       if (!link || !row?.classList.contains("row")) return;
       e.preventDefault();
-      try {
-        window.history.pushState({ jump: id }, "", `#${id}`);
-        pushedRef.current = true;
-      } catch {
-        // Some embedded viewers block history changes; the Back button still works.
-        pushedRef.current = false;
-      }
-      window.dispatchEvent(new CustomEvent("evidence:jump", { detail: id }));
       setAway(false);
-      setOrigin(link);
-      row.scrollIntoView({ behavior: reducedMotion() ? "auto" : "smooth", block: "start" });
-      row.querySelector<HTMLElement>(".row-head")?.focus({ preventScroll: true });
+      setTrip({ link, top: link.getBoundingClientRect().top });
+      window.dispatchEvent(new CustomEvent("evidence:jump", { detail: id }));
+      // Wait a frame so the row has opened before measuring where to scroll.
+      requestAnimationFrame(() => {
+        row.scrollIntoView({ behavior: reducedMotion() ? "auto" : "smooth", block: "start" });
+        row.querySelector<HTMLElement>(".row-head")?.focus({ preventScroll: true });
+      });
     };
     document.addEventListener("click", onClick);
     return () => document.removeEventListener("click", onClick);
   }, []);
 
   useEffect(() => {
-    if (!origin) return;
-    const returnTo = () => {
-      if (origin.isConnected) {
-        origin.scrollIntoView({ behavior: reducedMotion() ? "auto" : "smooth", block: "center" });
-        origin.focus({ preventScroll: true });
-      }
-      setOrigin(null);
-    };
-    // Browser back, back gesture, or our own button (which goes through history when it can).
-    const onPop = () => returnTo();
-    const onBack = () => (pushedRef.current ? window.history.back() : returnTo());
+    if (!trip) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOrigin(null);
+      if (e.key === "Escape") setTrip(null);
     };
     // Shown only while the link is out of view. Scrolling back to it yourself ends the trip.
     let seenAway = false;
@@ -395,29 +380,30 @@ function JumpBack() {
         seenAway = true;
         setAway(true);
       } else if (seenAway) {
-        setOrigin(null);
+        setTrip(null);
       }
     });
-    io.observe(origin);
-    window.addEventListener("popstate", onPop);
-    window.addEventListener("evidence:back", onBack);
+    io.observe(trip.link);
     window.addEventListener("keydown", onKey);
     return () => {
       io.disconnect();
-      window.removeEventListener("popstate", onPop);
-      window.removeEventListener("evidence:back", onBack);
       window.removeEventListener("keydown", onKey);
     };
-  }, [origin]);
+  }, [trip]);
 
-  if (!origin || !away) return null;
+  const goBack = () => {
+    if (!trip) return;
+    const { link, top } = trip;
+    setTrip(null);
+    if (!link.isConnected) return;
+    const y = window.scrollY + link.getBoundingClientRect().top - top;
+    window.scrollTo({ top: Math.max(0, y), behavior: reducedMotion() ? "auto" : "smooth" });
+    link.focus({ preventScroll: true });
+  };
+
+  if (!trip || !away) return null;
   return createPortal(
-    <button
-      type="button"
-      className="back-float"
-      aria-label="Back to where you were"
-      onClick={() => window.dispatchEvent(new Event("evidence:back"))}
-    >
+    <button type="button" className="back-float" aria-label="Back to where you were" onClick={goBack}>
       Back
     </button>,
     document.body,
