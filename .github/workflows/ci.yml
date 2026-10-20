@@ -18,7 +18,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npx tsc --noEmit
       - run: npm run lint
       - run: npm audit --omit=dev --audit-level=high
+      # The build generates next-env.d.ts (image and font types), so type-check after it.
       - run: npm run build
+      - run: npx tsc --noEmit
