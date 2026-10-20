@@ -117,7 +117,7 @@ button { font: inherit; color: inherit; }
 }
 
 .page { position: relative; overflow-x: clip; }
-.wrap { width: min(1120px, 100% - 32px); margin-inline: auto; }
+.wrap { width: min(1320px, 100% - 2 * clamp(16px, 4vw, 64px)); margin-inline: auto; }
 .muted { color: var(--ink-2); margin: 0; max-width: 60ch; }
 
 .label {
@@ -519,6 +519,7 @@ main > section { padding: clamp(56px, 8vw, 96px) 0 0; }
 .tk-group ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
 .tool {
   display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; font-size: .95rem;
+  white-space: nowrap; max-width: 100%;
   border: 1px solid var(--line); background: transparent; cursor: pointer; transition: background 150ms, color 150ms, border-color 150ms;
 }
 .tool:hover { border-color: var(--ink-2); }
