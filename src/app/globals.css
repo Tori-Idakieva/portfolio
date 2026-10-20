@@ -347,7 +347,7 @@ main > section { padding: clamp(56px, 8vw, 96px) 0 0; }
 .rows { list-style: none; margin: 0; padding: 0; }
 .row { border-bottom: 1px solid var(--line); scroll-margin-top: 88px; }
 .group .row:first-child .row-head { padding-top: 4px; }
-.row:target {
+.row[data-spot] {
   box-shadow: inset 3px 0 0 var(--accent); padding-inline: 20px 12px; border-radius: 0 var(--radius) var(--radius) 0;
   background: color-mix(in srgb, var(--accent) 7%, transparent);
 }
@@ -378,6 +378,10 @@ main > section { padding: clamp(56px, 8vw, 96px) 0 0; }
   background: color-mix(in srgb, var(--ink) 6%, transparent); border: 1px solid transparent; color: var(--ink-2);
 }
 .tags button:hover { border-color: var(--accent); color: var(--accent); }
+.row-spot-bar { display: flex; flex-wrap: wrap; gap: 6px 18px; }
+.row-back { all: unset; cursor: pointer; font-size: .88rem; font-weight: 600; color: var(--accent); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: color-mix(in srgb, var(--accent) 40%, transparent); }
+.row-back:hover { text-decoration-color: currentColor; }
+.row-back:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
 .source { display: flex; flex-wrap: wrap; gap: 6px 18px; font-weight: 600; }
 
 /* Relevance: a short bar at the start of each ranked row */

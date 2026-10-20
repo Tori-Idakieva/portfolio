@@ -340,18 +340,63 @@ export function EvidenceList({ role, filter, onFilter }: { role: Role; filter: F
 
 function Row({ item, role, onFilter, showOrg }: { item: Evidence; role: Role; onFilter: (f: Filter) => void; showOrg: boolean }) {
   const [open, setOpen] = useState(false);
+  // "Spotlit" when a visitor jumps here from a citation, stat or certificate link. The highlight
+  // lasts until they go back, close the row or jump somewhere else.
+  const [spot, setSpot] = useState(false);
+  const fromRef = useRef<HTMLElement | null>(null);
   const weight = role === "all" ? null : item.weight[role];
   const why = role === "all" ? null : item.why?.[role];
 
-  // Arriving from a citation or stat link (#id) opens the row.
   useEffect(() => {
-    const check = () => {
-      if (window.location.hash === `#${item.id}`) setOpen(true);
+    const arrive = (from: HTMLElement | null) => {
+      fromRef.current = from;
+      setOpen(true);
+      setSpot(true);
+      window.dispatchEvent(new CustomEvent("evidence:spot", { detail: item.id }));
     };
-    check();
-    window.addEventListener("hashchange", check);
-    return () => window.removeEventListener("hashchange", check);
+    const onSpot = (e: Event) => {
+      if ((e as CustomEvent<string>).detail !== item.id) setSpot(false);
+    };
+    const onClick = (e: MouseEvent) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const link = (e.target as Element | null)?.closest?.("a[href^='#']");
+      if (!link || link.getAttribute("href") !== `#${item.id}`) return;
+      e.preventDefault();
+      arrive(link as HTMLElement);
+      const el = document.getElementById(item.id);
+      el?.scrollIntoView({ behavior: reducedMotion() ? "auto" : "smooth", block: "start" });
+      el?.querySelector<HTMLElement>(".row-head")?.focus({ preventScroll: true });
+    };
+    // A shared link such as /#ev-id still opens and highlights the row. The hash is then dropped,
+    // so the same link works again later.
+    const onHash = () => {
+      if (window.location.hash !== `#${item.id}`) return;
+      arrive(null);
+      try {
+        window.history.replaceState(null, "", window.location.pathname + window.location.search);
+      } catch {
+        // Some embedded viewers block history changes; the highlight still clears on close.
+      }
+    };
+    onHash();
+    document.addEventListener("click", onClick);
+    window.addEventListener("hashchange", onHash);
+    window.addEventListener("evidence:spot", onSpot);
+    return () => {
+      document.removeEventListener("click", onClick);
+      window.removeEventListener("hashchange", onHash);
+      window.removeEventListener("evidence:spot", onSpot);
+    };
   }, [item.id]);
+
+  const goBack = () => {
+    const from = fromRef.current;
+    setSpot(false);
+    if (from?.isConnected) {
+      from.scrollIntoView({ behavior: reducedMotion() ? "auto" : "smooth", block: "center" });
+      from.focus({ preventScroll: true });
+    }
+  };
 
   return (
     <li
@@ -359,9 +404,14 @@ function Row({ item, role, onFilter, showOrg }: { item: Evidence; role: Role; on
       className="row"
       data-kind={item.kind}
       data-open={open || undefined}
+      data-spot={spot || undefined}
       style={{ viewTransitionName: `ev-${item.id}`, "--w": weight ?? 0 } as React.CSSProperties}
     >
-      <button type="button" className="row-head" aria-expanded={open} aria-controls={`${item.id}-more`} onClick={() => setOpen((o) => !o)}>
+      <button type="button" className="row-head" aria-expanded={open} aria-controls={`${item.id}-more`} onClick={() => {
+          setOpen((o) => !o);
+          setSpot(false);
+        }}
+      >
         {weight !== null && (
           <span className="fit" role="img" aria-label={`Relevance ${weight} of 3`}>
             <span />
@@ -380,6 +430,18 @@ function Row({ item, role, onFilter, showOrg }: { item: Evidence; role: Role; on
       </button>
       {open && (
         <div className="row-more" id={`${item.id}-more`}>
+          {spot && (
+            <div className="row-spot-bar">
+              {fromRef.current && (
+                <button type="button" className="row-back" onClick={goBack}>
+                  ← Back to where you were
+                </button>
+              )}
+              <button type="button" className="row-back" onClick={() => setSpot(false)}>
+                Clear highlight
+              </button>
+            </div>
+          )}
           {why && <p className="why">{why}</p>}
           <p>{item.summary}</p>
           {item.image && (
