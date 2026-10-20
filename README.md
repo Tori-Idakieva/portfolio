@@ -56,10 +56,6 @@ npm run dev
 
 Without Redis, local development skips the rate limits. Without an API key, the rest of the site works and the assistant shows a friendly message.
 
-## Deploy
-
-This repository powers Viktoria's own site and is not a template. Hosting notes for Viktoria: import it in Vercel, set `ANTHROPIC_API_KEY` (from a workspace with a monthly spend limit), add Upstash for Redis, and optionally set `CLAUDE_MODEL`, `DAILY_TOKEN_BUDGET` (default 250000) or `AI_DISABLED=1`.
-
 ## Licence
 
 All rights reserved. The code is public to read and review, but it is not licensed for reuse or redeployment. See [LICENSE](LICENSE).
