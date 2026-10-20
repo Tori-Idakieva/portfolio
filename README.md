@@ -58,11 +58,8 @@ Without Redis, local development skips the rate limits. Without an API key, the 
 
 ## Deploy
 
-1. Import the repository in Vercel.
-2. Add `ANTHROPIC_API_KEY` for Production. Use a dedicated Anthropic workspace with a monthly spend limit.
-3. Add Upstash for Redis from the Vercel Storage tab. It sets `KV_REST_API_URL` and `KV_REST_API_TOKEN`.
-4. Optional settings: `CLAUDE_MODEL` (default `claude-opus-5-5`), `DAILY_TOKEN_BUDGET` (default 250000) and `AI_DISABLED=1`.
+This repository powers Viktoria's own site and is not a template. Hosting notes for Viktoria: import it in Vercel, set `ANTHROPIC_API_KEY` (from a workspace with a monthly spend limit), add Upstash for Redis, and optionally set `CLAUDE_MODEL`, `DAILY_TOKEN_BUDGET` (default 250000) or `AI_DISABLED=1`.
 
 ## Licence
 
-The code is MIT licensed. The CV content, certification badges and screenshots are not licensed for reuse. See [LICENSE](LICENSE).
+All rights reserved. The code is public to read and review, but it is not licensed for reuse or redeployment. See [LICENSE](LICENSE).
