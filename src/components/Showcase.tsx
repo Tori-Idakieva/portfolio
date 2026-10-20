@@ -266,6 +266,7 @@ export function EvidenceList({ role, filter, onFilter }: { role: Role; filter: F
 
   return (
     <section className="evidence wrap" id="work" aria-labelledby="evidence-title">
+      <JumpBack />
       <div className="section-head">
         <p className="label">Experience</p>
         <h2 id="evidence-title">{role === "all" ? "What Viktoria has done, and where" : <>Strongest for {ROLE_LABELS[role]}</>}</h2>
@@ -338,82 +339,121 @@ export function EvidenceList({ role, filter, onFilter }: { role: Role; filter: F
   );
 }
 
+// Jumping to a work item from a citation, stat or certificate link. The link's own position is
+// remembered so a floating Back button can return there, the way footnote back-links and
+// "back to results" buttons work. The jump is a real history entry, so the browser's back
+// button and the phone's back gesture do the same thing.
+function JumpBack() {
+  const [origin, setOrigin] = useState<HTMLElement | null>(null);
+  const [away, setAway] = useState(false);
+  const pushedRef = useRef(false);
+
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const link = (e.target as Element | null)?.closest?.<HTMLAnchorElement>("a[href^='#']");
+      const id = link?.getAttribute("href")?.slice(1);
+      const row = id ? document.getElementById(id) : null;
+      if (!link || !row?.classList.contains("row")) return;
+      e.preventDefault();
+      try {
+        window.history.pushState({ jump: id }, "", `#${id}`);
+        pushedRef.current = true;
+      } catch {
+        // Some embedded viewers block history changes; the Back button still works.
+        pushedRef.current = false;
+      }
+      window.dispatchEvent(new CustomEvent("evidence:jump", { detail: id }));
+      setAway(false);
+      setOrigin(link);
+      row.scrollIntoView({ behavior: reducedMotion() ? "auto" : "smooth", block: "start" });
+      row.querySelector<HTMLElement>(".row-head")?.focus({ preventScroll: true });
+    };
+    document.addEventListener("click", onClick);
+    return () => document.removeEventListener("click", onClick);
+  }, []);
+
+  useEffect(() => {
+    if (!origin) return;
+    const returnTo = () => {
+      if (origin.isConnected) {
+        origin.scrollIntoView({ behavior: reducedMotion() ? "auto" : "smooth", block: "center" });
+        origin.focus({ preventScroll: true });
+      }
+      setOrigin(null);
+    };
+    // Browser back, back gesture, or our own button (which goes through history when it can).
+    const onPop = () => returnTo();
+    const onBack = () => (pushedRef.current ? window.history.back() : returnTo());
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOrigin(null);
+    };
+    // Shown only while the link is out of view. Scrolling back to it yourself ends the trip.
+    let seenAway = false;
+    const io = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) {
+        seenAway = true;
+        setAway(true);
+      } else if (seenAway) {
+        setOrigin(null);
+      }
+    });
+    io.observe(origin);
+    window.addEventListener("popstate", onPop);
+    window.addEventListener("evidence:back", onBack);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      io.disconnect();
+      window.removeEventListener("popstate", onPop);
+      window.removeEventListener("evidence:back", onBack);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [origin]);
+
+  if (!origin || !away) return null;
+  return createPortal(
+    <button
+      type="button"
+      className="back-float"
+      aria-label="Back to where you were"
+      onClick={() => window.dispatchEvent(new Event("evidence:back"))}
+    >
+      Back
+    </button>,
+    document.body,
+  );
+}
+
 function Row({ item, role, onFilter, showOrg }: { item: Evidence; role: Role; onFilter: (f: Filter) => void; showOrg: boolean }) {
   const [open, setOpen] = useState(false);
-  // "Spotlit" when a visitor jumps here from a citation, stat or certificate link. The highlight
-  // lasts until they go back, or press or focus anything outside the row.
-  const [spot, setSpot] = useState(false);
-  const fromRef = useRef<HTMLElement | null>(null);
-  const backRef = useRef<HTMLButtonElement>(null);
+  const flashRef = useRef<HTMLSpanElement>(null);
   const weight = role === "all" ? null : item.weight[role];
   const why = role === "all" ? null : item.why?.[role];
 
+  // Arriving here (a jump link, or a shared /#id link) opens the row and briefly lights it up,
+  // so the eye finds it. The light fades by itself; nothing needs clearing.
   useEffect(() => {
-    const arrive = (from: HTMLElement | null) => {
-      fromRef.current = from;
+    const arrive = () => {
       setOpen(true);
-      setSpot(true);
-      window.dispatchEvent(new CustomEvent("evidence:spot", { detail: item.id }));
+      flashRef.current?.animate([{ opacity: 1 }, { opacity: 1, offset: 0.35 }, { opacity: 0 }], {
+        duration: reducedMotion() ? 1600 : 2600,
+        easing: "ease-out",
+      });
     };
-    const onSpot = (e: Event) => {
-      if ((e as CustomEvent<string>).detail !== item.id) setSpot(false);
+    const onJump = (e: Event) => {
+      if ((e as CustomEvent<string>).detail === item.id) arrive();
     };
-    const onClick = (e: MouseEvent) => {
-      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-      const link = (e.target as Element | null)?.closest?.("a[href^='#']");
-      if (!link || link.getAttribute("href") !== `#${item.id}`) return;
-      e.preventDefault();
-      arrive(link as HTMLElement);
-      const el = document.getElementById(item.id);
-      el?.scrollIntoView({ behavior: reducedMotion() ? "auto" : "smooth", block: "start" });
-      el?.querySelector<HTMLElement>(".row-head")?.focus({ preventScroll: true });
-    };
-    // A shared link such as /#ev-id still opens and highlights the row. The hash is then dropped,
-    // so the same link works again later.
     const onHash = () => {
-      if (window.location.hash !== `#${item.id}`) return;
-      arrive(null);
-      try {
-        window.history.replaceState(null, "", window.location.pathname + window.location.search);
-      } catch {
-        // Some embedded viewers block history changes; the highlight still clears on close.
-      }
+      if (window.location.hash === `#${item.id}`) arrive();
     };
     onHash();
-    document.addEventListener("click", onClick);
+    window.addEventListener("evidence:jump", onJump);
     window.addEventListener("hashchange", onHash);
-    window.addEventListener("evidence:spot", onSpot);
     return () => {
-      document.removeEventListener("click", onClick);
+      window.removeEventListener("evidence:jump", onJump);
       window.removeEventListener("hashchange", onHash);
-      window.removeEventListener("evidence:spot", onSpot);
     };
   }, [item.id]);
-
-  // Any press or focus outside the row (and the back button) ends the highlight.
-  useEffect(() => {
-    if (!spot) return;
-    const outside = (e: Event) => {
-      const t = e.target as Node | null;
-      if (!t || document.getElementById(item.id)?.contains(t) || backRef.current?.contains(t)) return;
-      setSpot(false);
-    };
-    document.addEventListener("pointerdown", outside, true);
-    document.addEventListener("focusin", outside, true);
-    return () => {
-      document.removeEventListener("pointerdown", outside, true);
-      document.removeEventListener("focusin", outside, true);
-    };
-  }, [spot, item.id]);
-
-  const goBack = () => {
-    const from = fromRef.current;
-    setSpot(false);
-    if (from?.isConnected) {
-      from.scrollIntoView({ behavior: reducedMotion() ? "auto" : "smooth", block: "center" });
-      from.focus({ preventScroll: true });
-    }
-  };
 
   return (
     <li
@@ -421,13 +461,10 @@ function Row({ item, role, onFilter, showOrg }: { item: Evidence; role: Role; on
       className="row"
       data-kind={item.kind}
       data-open={open || undefined}
-      data-spot={spot || undefined}
       style={{ viewTransitionName: `ev-${item.id}`, "--w": weight ?? 0 } as React.CSSProperties}
     >
-      <button type="button" className="row-head" aria-expanded={open} aria-controls={`${item.id}-more`} onClick={() => {
-          setOpen((o) => !o);
-        }}
-      >
+      <span className="row-flash" ref={flashRef} aria-hidden="true" />
+      <button type="button" className="row-head" aria-expanded={open} aria-controls={`${item.id}-more`} onClick={() => setOpen((o) => !o)}>
         {weight !== null && (
           <span className="fit" role="img" aria-label={`Relevance ${weight} of 3`}>
             <span />
@@ -478,14 +515,6 @@ function Row({ item, role, onFilter, showOrg }: { item: Evidence; role: Role; on
           )}
         </div>
       )}
-      {spot &&
-        fromRef.current &&
-        createPortal(
-          <button type="button" ref={backRef} className="back-float" onClick={goBack}>
-            <span aria-hidden="true">↑</span> Back to where you were
-          </button>,
-          document.body,
-        )}
     </li>
   );
 }

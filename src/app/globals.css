@@ -347,9 +347,11 @@ main > section { padding: clamp(56px, 8vw, 96px) 0 0; }
 .rows { list-style: none; margin: 0; padding: 0; }
 .row { border-bottom: 1px solid var(--line); scroll-margin-top: 88px; }
 .group .row:first-child .row-head { padding-top: 4px; }
-.row[data-spot] {
-  box-shadow: inset 3px 0 0 var(--accent); padding-inline: 20px 12px; border-radius: 0 var(--radius) var(--radius) 0;
-  background: color-mix(in srgb, var(--accent) 7%, transparent);
+/* A soft panel that lights up a row someone just jumped to, then fades (see Row in Showcase.tsx). */
+.row { position: relative; }
+.row-flash {
+  position: absolute; inset: 0 -12px 0 -16px; z-index: -1; opacity: 0; pointer-events: none; border-radius: var(--radius);
+  background: color-mix(in srgb, var(--accent) 12%, transparent); box-shadow: inset 3px 0 0 var(--accent);
 }
 .row-head {
   all: unset; box-sizing: border-box; width: 100%; cursor: pointer;
