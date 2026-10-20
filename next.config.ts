@@ -1,24 +1,10 @@
 import type { NextConfig } from "next";
 
-const dev = process.env.NODE_ENV !== "production";
-
-// Everything the site loads is served from its own origin (fonts are self-hosted by next/font).
-const csp = [
-  "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${dev ? " 'unsafe-eval'" : ""}`,
-  "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data:",
-  "font-src 'self'",
-  "connect-src 'self'",
-  "frame-ancestors 'none'",
-  "base-uri 'self'",
-  "form-action 'self'",
-  "object-src 'none'",
-  ...(dev ? [] : ["upgrade-insecure-requests"]),
-].join("; ");
+// Pages get a nonce-based Content Security Policy from src/middleware.ts. Everything else
+// (API responses, robots.txt, images) never needs to run scripts, so it gets a deny-all policy.
+const lockedDownCsp = "default-src 'none'; img-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'";
 
 const securityHeaders = [
-  { key: "Content-Security-Policy", value: csp },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "DENY" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
@@ -29,7 +15,13 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      {
+        source: "/(api/.*|robots.txt|sitemap.xml|opengraph-image.*)",
+        headers: [{ key: "Content-Security-Policy", value: lockedDownCsp }],
+      },
+    ];
   },
 };
 

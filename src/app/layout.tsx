@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import { Inter_Tight, Instrument_Sans, JetBrains_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { person } from "@/content/profile";
@@ -42,12 +43,15 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // The static preview has no middleware, so it has no nonce.
+  const nonce = process.env.NEXT_PUBLIC_PREVIEW === "1" ? undefined : ((await headers()).get("x-nonce") ?? undefined);
   return (
     <html lang="en-GB" className={`${display.variable} ${body.variable} ${mono.variable}`}>
       <body>
         <script
           type="application/ld+json"
+          nonce={nonce}
           // JSON-LD is data, not code; "<" is escaped so the content can't close the tag.
           dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd).replace(/</g, "\\u003c") }}
         />
