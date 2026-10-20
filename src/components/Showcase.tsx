@@ -341,9 +341,10 @@ export function EvidenceList({ role, filter, onFilter }: { role: Role; filter: F
 function Row({ item, role, onFilter, showOrg }: { item: Evidence; role: Role; onFilter: (f: Filter) => void; showOrg: boolean }) {
   const [open, setOpen] = useState(false);
   // "Spotlit" when a visitor jumps here from a citation, stat or certificate link. The highlight
-  // lasts until they go back, close the row or jump somewhere else.
+  // lasts until they go back, or press or focus anything outside the row.
   const [spot, setSpot] = useState(false);
   const fromRef = useRef<HTMLElement | null>(null);
+  const backRef = useRef<HTMLButtonElement>(null);
   const weight = role === "all" ? null : item.weight[role];
   const why = role === "all" ? null : item.why?.[role];
 
@@ -389,6 +390,22 @@ function Row({ item, role, onFilter, showOrg }: { item: Evidence; role: Role; on
     };
   }, [item.id]);
 
+  // Any press or focus outside the row (and the back button) ends the highlight.
+  useEffect(() => {
+    if (!spot) return;
+    const outside = (e: Event) => {
+      const t = e.target as Node | null;
+      if (!t || document.getElementById(item.id)?.contains(t) || backRef.current?.contains(t)) return;
+      setSpot(false);
+    };
+    document.addEventListener("pointerdown", outside, true);
+    document.addEventListener("focusin", outside, true);
+    return () => {
+      document.removeEventListener("pointerdown", outside, true);
+      document.removeEventListener("focusin", outside, true);
+    };
+  }, [spot, item.id]);
+
   const goBack = () => {
     const from = fromRef.current;
     setSpot(false);
@@ -409,7 +426,6 @@ function Row({ item, role, onFilter, showOrg }: { item: Evidence; role: Role; on
     >
       <button type="button" className="row-head" aria-expanded={open} aria-controls={`${item.id}-more`} onClick={() => {
           setOpen((o) => !o);
-          setSpot(false);
         }}
       >
         {weight !== null && (
@@ -430,18 +446,6 @@ function Row({ item, role, onFilter, showOrg }: { item: Evidence; role: Role; on
       </button>
       {open && (
         <div className="row-more" id={`${item.id}-more`}>
-          {spot && (
-            <div className="row-spot-bar">
-              {fromRef.current && (
-                <button type="button" className="row-back" onClick={goBack}>
-                  ← Back to where you were
-                </button>
-              )}
-              <button type="button" className="row-back" onClick={() => setSpot(false)}>
-                Clear highlight
-              </button>
-            </div>
-          )}
           {why && <p className="why">{why}</p>}
           <p>{item.summary}</p>
           {item.image && (
@@ -474,6 +478,14 @@ function Row({ item, role, onFilter, showOrg }: { item: Evidence; role: Role; on
           )}
         </div>
       )}
+      {spot &&
+        fromRef.current &&
+        createPortal(
+          <button type="button" ref={backRef} className="back-float" onClick={goBack}>
+            <span aria-hidden="true">↑</span> Back to where you were
+          </button>,
+          document.body,
+        )}
     </li>
   );
 }
