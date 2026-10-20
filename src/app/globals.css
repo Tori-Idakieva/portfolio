@@ -362,6 +362,8 @@ main > section { padding: clamp(56px, 8vw, 96px) 0 0; }
 .row-more { display: grid; gap: 10px; padding: 0 44px 18px 0; max-width: 72ch; animation: rise 300ms cubic-bezier(.2,.8,.2,1); }
 .row-more p { margin: 0; }
 .ranked .row-head { grid-template-columns: 48px minmax(0, 1fr) 28px; }
+/* Line the opened detail up with the title, past the relevance bar and its gap. */
+.ranked .row-more { padding-left: 64px; }
 .why { color: var(--accent); font-weight: 600; }
 .tags { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
 .tags button {
@@ -382,6 +384,7 @@ main > section { padding: clamp(56px, 8vw, 96px) 0 0; }
   .group { grid-template-columns: minmax(0, 1fr); }
   .ranked .row-head { grid-template-columns: 32px minmax(0, 1fr) 28px; gap: 12px; }
   .row-more { padding-right: 0; }
+  .ranked .row-more { padding-left: 44px; }
 }
 
 ::view-transition-group(*) { animation-duration: 420ms; animation-timing-function: cubic-bezier(.2,.8,.2,1); }
