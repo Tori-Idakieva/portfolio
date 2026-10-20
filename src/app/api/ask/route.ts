@@ -19,7 +19,18 @@ export const runtime = "nodejs";
 export const maxDuration = 30;
 
 
-const client = new Anthropic({ timeout: LIMITS.timeoutMs, maxRetries: 1 });
+// Organisation-wide keys must name the workspace to bill; workspace keys don't need this.
+const workspaceId = process.env.ANTHROPIC_WORKSPACE_ID;
+const client = new Anthropic({
+  timeout: LIMITS.timeoutMs,
+  maxRetries: 1,
+  ...(workspaceId ? { defaultHeaders: { "anthropic-workspace-id": workspaceId } } : {}),
+});
+
+// Server-side refusal fallbacks are only offered on these model families.
+const fallbackParams = /^claude-(opus|fable|sonnet)-5/.test(MODEL)
+  ? { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" as const }
+  : {};
 
 const system: Anthropic.Beta.BetaTextBlockParam[] = [
   { type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral", ttl: "1h" } },
@@ -113,6 +124,7 @@ export async function POST(req: Request) {
           output_config: { effort: "low", format: zodOutputFormat(MatchOutput) },
           system,
           messages: [{ role: "user", content: matchPrompt(input.job, fewer) }],
+          ...fallbackParams,
         });
         await recordUsage(res.usage);
         if (res.stop_reason === "refusal") return unavailable("match_failed");
@@ -134,6 +146,7 @@ export async function POST(req: Request) {
     output_config: { effort: "low" },
     system,
     messages: [{ role: "user", content }],
+    ...fallbackParams,
   });
 
   // Wait for the first event so connection errors become a clean JSON response.
