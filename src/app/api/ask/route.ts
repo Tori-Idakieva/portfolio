@@ -34,7 +34,13 @@ function unavailable(reason: Unavailable, status = 200) {
   return Response.json({ unavailable: reason }, { status });
 }
 
+// Logged to the Vercel function logs so failures can be diagnosed. Never includes the API key.
 function upstreamReason(err: unknown): Unavailable {
+  if (err instanceof Anthropic.APIError) {
+    console.error(`[ask] Anthropic API error ${err.status ?? "?"}: ${err.message}`);
+  } else {
+    console.error(`[ask] Anthropic request failed: ${err instanceof Error ? err.message : String(err)}`);
+  }
   if (err instanceof Anthropic.APIConnectionTimeoutError) return "timeout";
   return "upstream";
 }
@@ -70,7 +76,10 @@ async function readBody(req: Request): Promise<string | null> {
 }
 
 export async function POST(req: Request) {
-  if (crossOrigin(req)) return Response.json({ error: "forbidden" }, { status: 403 });
+  if (crossOrigin(req)) {
+    console.warn(`[ask] rejected cross-origin request: origin=${req.headers.get("origin")} host=${req.headers.get("x-forwarded-host") ?? req.headers.get("host")}`);
+    return Response.json({ error: "forbidden" }, { status: 403 });
+  }
   if (!req.headers.get("content-type")?.toLowerCase().startsWith("application/json")) {
     return Response.json({ error: "unsupported_media_type" }, { status: 415 });
   }
