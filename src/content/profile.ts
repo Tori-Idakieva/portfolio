@@ -28,10 +28,13 @@ export const person = {
   email: "tori.idakieva@gmail.com",
   github: "https://github.com/Tori-Idakieva",
   linkedin: "https://www.linkedin.com/in/viktoria-idakieva-9b2533b9/" as string | null,
+  // What Viktoria is doing now, and when Viktoria can start. Written by Viktoria; the AI quotes it.
+  status:
+    "Since leaving BlackRock in August 2026, Viktoria has been building personal projects, finishing the MSc in Ethical Hacking and Cybersecurity, earning the Claude Certified Developer certification, and looking for the right next role. Viktoria is actively looking and can start as soon as the right position comes up.",
 };
 
 export const pitches: Record<Role, string> = {
-  all: "Viktoria has spent ten years turning ambiguous requirements into shipped software: a military-grade email client, two award-winning consumer apps, AI tools that cut legal procedures by at least 80%, and an investor-ready hardware PoC. Alongside a full-time role, Viktoria is completing an MSc in Ethical Hacking and Cybersecurity, so security is built in rather than bolted on. Pick a role above to see the experience that matters for it.",
+  all: "Viktoria has spent ten years turning ambiguous requirements into shipped software: a military-grade email client, two award-winning consumer apps, AI tools that cut legal procedures by at least 80%, and an investor-ready hardware PoC. Viktoria is also completing an MSc in Ethical Hacking and Cybersecurity, so security is built in rather than bolted on. Pick a role above to see the experience that matters for it.",
   frontend:
     "Viktoria is a React and TypeScript engineer with a decade of production frontend work. At BlackRock, Viktoria replaced a Power BI app with a custom React and Highcharts reporting interface that improved both visualisation and performance, and closed gaps between Figma and the component library. Earlier work spans an accessible, internationalised email client and two award-winning apps.",
   product:
@@ -41,7 +44,7 @@ export const pitches: Record<Role, string> = {
   consultant:
     "Viktoria is used to joining a client's team, learning the domain quickly and delivering. At ANDigital, a digital consultancy, Viktoria worked on client teams to ship two award-winning apps, OneViu and Wagamama Soul Club, acted as security champion, and ran upskilling courses. As a part-time technical lead consultant for Vynrr, Viktoria worked directly with founders to turn a concept into an investor-ready PoC. At BlackRock, Viktoria shaped two AI products through user-led development with legal teams.",
   appsec:
-    "Viktoria brings developer depth to security. At BlackRock, Viktoria triages and resolves flagged vulnerabilities, set up SonarQube security scanning across multiple projects, and placed 10th out of hundreds of teams in the internal CTF. At ANDigital, Viktoria was security champion for internal and client teams and set up SonarQube and Snyk in CI. Viktoria holds CompTIA Security+, and is completing an MSc in Ethical Hacking and Cybersecurity, including automating a pentest methodology with Python and Playwright.",
+    "Viktoria brings developer depth to security. At BlackRock, Viktoria triaged and resolved flagged vulnerabilities, set up SonarQube security scanning across multiple projects, and placed 10th out of hundreds of teams in the internal CTF. At ANDigital, Viktoria was security champion for internal and client teams and set up SonarQube and Snyk in CI. Viktoria holds CompTIA Security+, and is completing an MSc in Ethical Hacking and Cybersecurity, including automating a pentest methodology with Python and Playwright.",
 };
 
 export type EvidenceKind = "work" | "code" | "study" | "cert";

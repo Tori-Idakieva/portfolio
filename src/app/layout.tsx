@@ -4,6 +4,7 @@ import { Inter_Tight, Instrument_Sans, JetBrains_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { person } from "@/content/profile";
 import { SITE_URL } from "@/lib/site";
+import { THEME_BOOT } from "@/lib/theme";
 import "./globals.css";
 
 const display = Inter_Tight({ subsets: ["latin"], variable: "--font-display", display: "swap" });
@@ -47,7 +48,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // The static preview has no middleware, so it has no nonce.
   const nonce = process.env.NEXT_PUBLIC_PREVIEW === "1" ? undefined : ((await headers()).get("x-nonce") ?? undefined);
   return (
-    <html lang="en-GB" className={`${display.variable} ${body.variable} ${mono.variable}`}>
+    // The theme script sets data-theme before React hydrates, so the attribute may differ.
+    <html lang="en-GB" className={`${display.variable} ${body.variable} ${mono.variable}`} suppressHydrationWarning>
+      <head>
+        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: THEME_BOOT }} />
+      </head>
       <body>
         <script
           type="application/ld+json"

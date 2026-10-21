@@ -164,10 +164,19 @@ button { font: inherit; color: inherit; }
   transition: color 150ms, background 150ms;
 }
 .topbar a:not(.mark):hover { color: var(--ink); }
+.topbar ul { align-items: center; }
+.theme-li { margin-inline: 4px; }
+.theme-toggle {
+  display: inline-grid; place-items: center; width: 36px; height: 36px; padding: 0; cursor: pointer;
+  border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--ink-2);
+  transition: color 150ms, border-color 150ms, rotate 400ms cubic-bezier(.2,.8,.2,1);
+}
+.theme-toggle:hover { color: var(--ink); border-color: var(--ink-2); rotate: 20deg; }
+.theme-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .topbar .nav-cta { border: 1px solid var(--ink); color: var(--ink) !important; }
 .topbar .nav-cta:hover { background: var(--ink); color: var(--bg) !important; }
 @media (max-width: 620px) {
-  .topbar li:not(:last-child) { display: none; }
+  .topbar li:not(:last-child):not(.theme-li) { display: none; }
 }
 
 /* Hero: an introduction on the left, a quiet summary card on the right */

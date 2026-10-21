@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { certifications, person, ROLE_LABELS, skills, timeline, type Role } from "@/content/profile";
+import { effectiveTheme, setTheme } from "@/lib/theme";
 
 // A small interactive terminal in the header. Visitors run a few commands to explore the CV.
 // Every line is rendered as plain text through React, never as HTML.
@@ -19,6 +20,7 @@ const HELP: Record<string, string> = {
   study: "degrees",
   stack: "main tools",
   contact: "how to get in touch",
+  "lights off": "dark mode (lights on for light)",
   clear: "clear the screen",
 };
 const MAX_INPUT = 40;
@@ -35,7 +37,27 @@ export function cleanCommand(raw: string): string {
     .slice(0, MAX_INPUT);
 }
 
+// The light switch: "lights off/on", "theme dark/light/auto". Returns null for anything else.
+function lights(c: string): Line[] | null {
+  const want =
+    c === "lights off" || c === "theme dark" ? "dark" : c === "lights on" || c === "theme light" ? "light" : c === "theme auto" ? "system" : null;
+  if (c === "theme" || c === "lights") {
+    return [
+      { kind: "row", head: "Now", meta: `${effectiveTheme()} mode` },
+      { kind: "dim", text: "Try: lights off, lights on, or theme auto to follow your device." },
+    ];
+  }
+  if (!want) return null;
+  const before = effectiveTheme();
+  setTheme(want);
+  if (want === "system") return [{ kind: "ok", text: `Following your device: ${effectiveTheme()} mode.` }];
+  if (before === want) return [{ kind: "dim", text: want === "dark" ? "The lights are already off." : "The lights are already on." }];
+  return [{ kind: "ok", text: want === "dark" ? "*click* Lights off. Easier on the eyes." : "*click* Lights on." }];
+}
+
 function run(c: string, role: Role): Line[] | "clear" | "hire" {
+  const switched = lights(c);
+  if (switched) return switched;
   const text = (t: string): Line => ({ kind: "text", text: t });
   const dim = (t: string): Line => ({ kind: "dim", text: t });
   switch (c) {
@@ -45,6 +67,7 @@ function run(c: string, role: Role): Line[] | "clear" | "hire" {
         text(`Software engineer, ${person.location}`),
         text("Ten years shipping frontend and fullstack software."),
         dim(role === "all" ? "Pick a role below the terminal to tailor the page." : `Viewing as: ${ROLE_LABELS[role]}`),
+        dim(effectiveTheme() === "dark" ? "Too dark in here? Type: lights on" : "Bit bright in here? Type: lights off"),
       ];
     case "experience":
       return [

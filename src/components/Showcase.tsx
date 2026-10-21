@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { scrollToElement } from "@/lib/scroll";
 import claudeBadge from "@/assets/certs/claude-developer-foundations.png";
 import securityPlusBadge from "@/assets/certs/comptia-security-plus.png";
 import {
@@ -155,7 +156,7 @@ export function Timeline({ filter, onFilter }: { filter: Filter; onFilter: (f: F
                 aria-pressed={active}
                 onClick={() => {
                   onFilter(active ? null : { type: "org", value: t.match, label: t.org });
-                  if (!active) document.getElementById("work")?.scrollIntoView({ behavior: reducedMotion() ? "auto" : "smooth" });
+                  if (!active) scrollToElement("work");
                 }}
               >
                 <span className="tl-list-kind">
@@ -355,14 +356,12 @@ function Row({ item, role, onFilter, showOrg }: { item: Evidence; role: Role; on
         easing: "ease-out",
       });
     };
-    const scrollHere = (behavior: ScrollBehavior) =>
-      document.getElementById(item.id)?.scrollIntoView({ behavior: reducedMotion() ? "auto" : behavior, block: "start" });
     const onClick = (e: MouseEvent) => {
       if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
       const link = (e.target as Element | null)?.closest?.("a[href^='#']");
       if (link?.getAttribute("href") !== `#${item.id}`) return;
       e.preventDefault();
-      scrollHere("smooth");
+      scrollToElement(item.id);
       arrive();
     };
     // A shared link such as /#study-msc still lands here. Wait for the page to settle so the
@@ -371,7 +370,7 @@ function Row({ item, role, onFilter, showOrg }: { item: Evidence; role: Role; on
     const onHash = () => {
       if (window.location.hash !== `#${item.id}`) return;
       timer = window.setTimeout(() => {
-        scrollHere("auto");
+        scrollToElement(item.id);
         arrive();
         try {
           window.history.replaceState(null, "", window.location.pathname + window.location.search);
@@ -708,11 +707,11 @@ export function Toolkit({ filter, onFilter }: { filter: Filter; onFilter: (f: Fi
                         onClick={() => {
                           // Tools learned through a certification point at that card instead of the experience list.
                           if (t.at.every((p) => p === "CCDV-F")) {
-                            document.getElementById("certifications")?.scrollIntoView({ behavior: reducedMotion() ? "auto" : "smooth" });
+                            scrollToElement("certifications");
                             return;
                           }
                           onFilter(active ? null : skillFilter(t.name));
-                          if (!active) document.getElementById("work")?.scrollIntoView({ behavior: reducedMotion() ? "auto" : "smooth" });
+                          if (!active) scrollToElement("work");
                         }}
                       >
                         {t.name} <span className="tool-n">{t.at.length}</span>

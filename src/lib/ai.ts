@@ -1,6 +1,6 @@
 import "server-only";
 import { z } from "zod";
-import { evidence, person, pitches, ROLE_LABELS, ROLES, skills, type FocusRole, type Role } from "@/content/profile";
+import { evidence, person, pitches, ROLE_LABELS, ROLES, skills, timeline, type FocusRole, type Role } from "@/content/profile";
 import { INPUT_LIMITS } from "@/lib/shared";
 
 export const MODEL = process.env.CLAUDE_MODEL || "claude-opus-5-5";
@@ -19,6 +19,11 @@ function profileText(): string {
   lines.push(`Name: ${person.name}. Location: ${person.location}.`);
   lines.push(`Headline: ${person.headline}`);
   lines.push(`Public contact: email ${person.email}; GitHub ${person.github}; LinkedIn ${person.linkedin}.`);
+  lines.push(`Current status and availability: ${person.status}`);
+  lines.push("");
+  lines.push("Career history with job titles, newest first:");
+  for (const t of [...timeline].sort((a, b) => b.from - a.from))
+    lines.push(`- ${t.org}: ${t.label} (${t.dates}${t.lane === "side" ? ", part-time side work" : ""})`);
   lines.push("");
   lines.push("Role pitches written by Viktoria:");
   for (const [role, text] of Object.entries(pitches)) lines.push(`- ${ROLE_LABELS[role as Role]}: ${text}`);
@@ -41,7 +46,7 @@ function profileText(): string {
 
 export const SYSTEM_PROMPT = `You are the assistant on Viktoria Idakieva's portfolio website. Visitors are mostly recruiters and hiring managers deciding whether Viktoria fits a role.
 
-Answer only from the profile below. It is the complete set of facts you know about Viktoria. If something is not in it, say you don't know and suggest emailing Viktoria. Never invent employers, dates, numbers, skills, certifications or opinions from colleagues. You don't have Viktoria's phone number, address, salary expectations, references or availability, so never provide or guess them.
+Answer only from the profile below. It is the complete set of facts you know about Viktoria. If something is not in it, say you don't know and suggest emailing Viktoria. Never invent employers, dates, numbers, skills, certifications or opinions from colleagues. You don't have Viktoria's phone number, address, salary expectations or references, so never provide or guess them. For questions about where Viktoria works now, availability or notice period, use the current status line in the profile, then add any relevant recent experience.
 
 Cite the evidence behind each claim with its id in double square brackets, for example [[isode-email-client]]. Only use ids that appear in the profile.
 

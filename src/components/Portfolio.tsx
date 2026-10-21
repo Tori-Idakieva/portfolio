@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { orderedEvidence, person, pitches, ROLE_LABELS, ROLES, type Role } from "@/content/profile";
 import { Assistant, PREVIEW } from "./Assistant";
 import { Terminal } from "./Terminal";
+import { ThemeToggle } from "./ThemeToggle";
 import { Certifications, EvidenceList, GitHubProjects, SpotTheBug, Stats, Timeline, Toolkit, type Filter } from "./Showcase";
 
 const ROLE_BLURBS: Record<Role, string> = {
@@ -131,6 +132,9 @@ export function Portfolio({ initialRole }: { initialRole: Role }) {
           <li>
             <a href="#toolkit">Toolkit</a>
           </li>
+          <li className="theme-li">
+            <ThemeToggle />
+          </li>
           <li>
             <a href="#contact" className="nav-cta">
               Contact
@@ -175,10 +179,7 @@ export function Portfolio({ initialRole }: { initialRole: Role }) {
         <GitHubProjects />
         <Timeline
           filter={filter}
-          onFilter={(f) => {
-            chooseFilter(f);
-            if (f) document.getElementById("work")?.scrollIntoView({ behavior: "smooth" });
-          }}
+onFilter={chooseFilter}
         />
         <Toolkit filter={filter} onFilter={chooseFilter} />
       </main>
