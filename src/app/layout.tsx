@@ -13,7 +13,7 @@ const body = Instrument_Sans({ subsets: ["latin"], variable: "--font-body", disp
 
 const title = "Viktoria Idakieva, software engineer in London";
 const description =
-  "Senior software engineer in London with ten years of frontend and fullstack work, an MSc in Ethical Hacking and Cybersecurity, and recent AI products. Pick a role and see the evidence.";
+  "Senior software engineer in London with ten years of frontend and full-stack work, an MSc in Ethical Hacking and Cybersecurity, and recent AI products. Pick a role and see the evidence.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -38,10 +38,7 @@ const personJsonLd = {
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#fcfbf8" },
-    { media: "(prefers-color-scheme: dark)", color: "#14161a" },
-  ],
+  themeColor: "#fcfbf8",
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

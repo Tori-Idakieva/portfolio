@@ -26,7 +26,7 @@ export default function OpengraphImage() {
           <div style={{ fontSize: 112, fontWeight: 700, letterSpacing: -3, lineHeight: 1 }}>Viktoria</div>
           <div style={{ fontSize: 112, fontWeight: 700, letterSpacing: -3, lineHeight: 1, color: "#e07a55" }}>Idakieva</div>
           <div style={{ marginTop: 32, fontSize: 36, color: "#c9c6bf" }}>
-            Frontend · Product · Fullstack · Consultant · Cybersecurity
+            Frontend · Product · Full-stack · Consultant · Cybersecurity
           </div>
         </div>
         <div style={{ display: "flex", fontSize: 26, color: "#a3a7ae" }}>viktoriaidakieva.co.uk</div>

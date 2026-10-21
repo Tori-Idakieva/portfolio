@@ -1,6 +1,6 @@
 import "server-only";
 import { z } from "zod";
-import { evidence, person, pitches, ROLE_LABELS, ROLES, skills, timeline, type FocusRole, type Role } from "@/content/profile";
+import { evidence, inOwnWords, person, pitches, ROLE_LABELS, ROLES, skills, timeline, type FocusRole, type Role } from "@/content/profile";
 import { INPUT_LIMITS } from "@/lib/shared";
 
 export const MODEL = process.env.CLAUDE_MODEL || "claude-opus-5-5";
@@ -24,6 +24,9 @@ function profileText(): string {
   lines.push("Career history with job titles, newest first:");
   for (const t of [...timeline].sort((a, b) => b.from - a.from))
     lines.push(`- ${t.org}: ${t.label} (${t.dates}${t.lane === "side" ? ", part-time side work" : ""})`);
+  lines.push("");
+  lines.push("In Viktoria's own words (use these for questions on these topics):");
+  for (const w of inOwnWords) lines.push(`- ${w.topic}: ${w.text}`);
   lines.push("");
   lines.push("Role pitches written by Viktoria:");
   for (const [role, text] of Object.entries(pitches)) lines.push(`- ${ROLE_LABELS[role as Role]}: ${text}`);

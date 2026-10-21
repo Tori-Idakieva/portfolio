@@ -9,7 +9,7 @@ export const ROLE_LABELS: Record<Role, string> = {
   all: "Everything",
   frontend: "Frontend",
   product: "Product Engineer",
-  fullstack: "Fullstack",
+  fullstack: "Full-stack",
   consultant: "Consultant",
   appsec: "Cybersecurity",
 };
@@ -24,7 +24,7 @@ export const person = {
   shortName: "Viktoria",
   location: "London, UK",
   headline:
-    "Senior software engineer. Ten years building frontend and fullstack software, most recently AI tools, and now training as an ethical hacker.",
+    "Senior software engineer. Ten years building frontend and full-stack software, most recently AI tools, and now training as an ethical hacker.",
   email: "tori.idakieva@gmail.com",
   github: "https://github.com/Tori-Idakieva",
   linkedin: "https://www.linkedin.com/in/viktoria-idakieva-9b2533b9/" as string | null,
@@ -32,6 +32,26 @@ export const person = {
   status:
     "Since leaving BlackRock in August 2026, Viktoria has been building personal projects, finishing the MSc in Ethical Hacking and Cybersecurity, earning the Claude Certified Developer certification, and looking for the right next role. Viktoria is actively looking and can start as soon as the right position comes up.",
 };
+
+// Viktoria's own answers to questions recruiters ask. The AI uses these when they come up.
+export const inOwnWords: { topic: string; text: string }[] = [
+  {
+    topic: "Remote, hybrid or office work",
+    text: "Viktoria has no strong preference but enjoys a hybrid environment. It depends on the role, the team and what the position needs: some work is easier done remotely, and some needs time on site.",
+  },
+  {
+    topic: "Why cybersecurity",
+    text: "What excites Viktoria most is that cybersecurity encourages a different way of thinking. Developers are trained to build features that work; security teaches you to think like an attacker, challenge assumptions and spot risks before they become problems. Viktoria believes that mindset makes a stronger engineer and more resilient products.",
+  },
+  {
+    topic: "The team Viktoria does best in",
+    text: "Viktoria does the best work in collaborative, high-trust teams where people share ideas, challenge assumptions respectfully and solve problems together. Comfortable working independently, Viktoria especially enjoys teams that value continuous learning, knowledge sharing and supporting each other's growth. Some of the projects Viktoria enjoyed most involved close collaboration with stakeholders, designers, developers and users to turn ambiguous ideas into successful products.",
+  },
+  {
+    topic: "Accessibility",
+    text: "Viktoria sees accessibility as a fundamental part of building good software, not an optional extra: accessible applications are more usable, maintainable and inclusive for everyone. At Isode, accessibility and internationalisation were part of the development process on Harrier, a military-grade email client, alongside complex features such as Compose, S/MIME, Draft and Release, and email forwarding. The approach is rooted in attention to detail and empathy for users, whether implementing interfaces, reviewing component libraries or refining user experiences, with a focus on solutions that are clear, consistent and easy to use. At BlackRock, Viktoria identified and resolved inconsistencies between Figma designs and reusable UI components, improving the experience for developers and users. Requirements vary between projects, but the goal stays the same: software that as many people as possible can use effectively from the outset, rather than retrofitting accessibility later.",
+  },
+];
 
 export const pitches: Record<Role, string> = {
   all: "Viktoria has spent ten years turning ambiguous requirements into shipped software: a military-grade email client, two award-winning consumer apps, AI tools that cut legal procedures by at least 80%, and an investor-ready hardware PoC. Viktoria is also completing an MSc in Ethical Hacking and Cybersecurity, so security is built in rather than bolted on. Pick a role above to see the experience that matters for it.",

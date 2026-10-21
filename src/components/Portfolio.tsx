@@ -24,6 +24,8 @@ export function Portfolio({ initialRole }: { initialRole: Role }) {
   const [role, setRole] = useState<Role>(initialRole);
   const [filter, setFilter] = useState<Filter>(null);
   const [announcement, setAnnouncement] = useState("");
+  // Set once the visitor picks a role, so the picker can point at what changed below.
+  const [picked, setPicked] = useState(false);
   const heroRef = useRef<HTMLElement>(null);
 
   // A soft light in the role's colour follows the pointer across the header.
@@ -47,6 +49,29 @@ export function Portfolio({ initialRole }: { initialRole: Role }) {
     };
   }, []);
 
+  // The graph-paper sections (Try it, Ask an AI) carry a soft light that follows the mouse.
+  useEffect(() => {
+    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+    let raf = 0;
+    const onMove = (e: PointerEvent) => {
+      const band = (e.target as Element | null)?.closest?.<HTMLElement>(".bug, .assistant");
+      if (!band) return;
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        // On big screens the page is zoomed (see globals.css), so convert to the page's own pixels.
+        const zoom = parseFloat(getComputedStyle(document.documentElement).zoom) || 1;
+        const box = band.getBoundingClientRect();
+        band.style.setProperty("--mx", `${e.clientX / zoom}px`);
+        band.style.setProperty("--my", `${(e.clientY - box.top) / zoom}px`);
+      });
+    };
+    document.addEventListener("pointermove", onMove, { passive: true });
+    return () => {
+      document.removeEventListener("pointermove", onMove);
+      cancelAnimationFrame(raf);
+    };
+  }, []);
+
   // Static previews can't read the query string, so they accept #appsec style links.
   useEffect(() => {
     if (!PREVIEW) return;
@@ -64,6 +89,7 @@ export function Portfolio({ initialRole }: { initialRole: Role }) {
   const chooseRole = useCallback(
     (next: Role) => {
       withTransition(() => setRole(next));
+      setPicked(true);
       try {
         const url = new URL(window.location.href);
         if (next === "all") url.searchParams.delete("role");
@@ -209,7 +235,7 @@ export function Portfolio({ initialRole }: { initialRole: Role }) {
           <p className="headline">{person.headline}</p>
         </div>
         <Terminal role={role} />
-        <LensPicker role={role} onChange={chooseRole} />
+        <LensPicker role={role} onChange={chooseRole} picked={picked} />
       </header>
 
       <main>
@@ -286,7 +312,7 @@ function Rotator({ role, onPick }: { role: Role; onPick: (r: Role) => void }) {
   );
 }
 
-function LensPicker({ role, onChange }: { role: Role; onChange: (r: Role) => void }) {
+function LensPicker({ role, onChange, picked }: { role: Role; onChange: (r: Role) => void; picked: boolean }) {
   return (
     <fieldset className="lens-picker">
       <legend>I&apos;m hiring for</legend>
@@ -299,6 +325,18 @@ function LensPicker({ role, onChange }: { role: Role; onChange: (r: Role) => voi
           </label>
         ))}
       </div>
+      {picked && (
+        // Keyed by role so the note animates in again on every change.
+        <p className="lens-note" key={role}>
+          <span className="lens-note-dot" aria-hidden="true" />
+          {role === "all"
+            ? "Showing everything again, newest first."
+            : `Tailored for ${ROLE_LABELS[role]}: the experience below is re-ranked, matching tools are lit up, and the AI answers for this role.`}{" "}
+          <button type="button" onClick={() => scrollToElement("work")}>
+            See what changed <span aria-hidden="true">↓</span>
+          </button>
+        </p>
+      )}
     </fieldset>
   );
 }

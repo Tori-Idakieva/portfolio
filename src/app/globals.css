@@ -15,12 +15,12 @@
   --a-consultant: #6845ab;
   --band: #f1f2fb;
   --raised: #ffffff;
-  --night: #1a1d23;
-  /* Top edge of the contact band: a hard switch in light mode, a soft fade from the page in dark mode. */
-  --contact-top: var(--night);
-  --night-ink: #efede8;
-  --night-2: #a9adb5;
-  --night-line: #343842;
+  /* The contact section: warm paper in light mode, near-black in dark mode, fading in from the page. */
+  --night: #f3efe7;
+  --contact-top: #fcfbf8;
+  --night-ink: #16181d;
+  --night-2: #585d67;
+  --night-line: #ddd8ce;
   --a-appsec: #b02c4f;
   --radius: 12px;
   --glow-all: #e07a55;
@@ -31,33 +31,7 @@
   color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #14161a;
-    --surface: #1b1e23;
-    --ink: #e9e7e2;
-    --ink-2: #a3a7ae;
-    --line: #2c3037;
-    --code-bg: #0b0d10;
-    --code-ink: #e8e6e1;
-    --code-dim: #7f838c;
-    --good: #7cbf9a;
-    --a-all: #e9e7e2;
-    --a-frontend: #9db4dc;
-    --a-product: #d9ac78;
-    --a-fullstack: #86c2b6;
-    --a-consultant: #bba6dc;
-    --band: #1f2329;
-    --raised: #272b33;
-    --night: #0b0d10;
-    --contact-top: #14161a;
-    --night-line: #2a2e36;
-
-    --a-appsec: #dc95a6;
-    --glow-all: #b9a27a;
-    color-scheme: dark;
-  }
-}
+/* Light is the default. Dark mode is the visitor's choice (top-bar switch or "lights off" in the terminal). */
 :root[data-theme="dark"] {
   --bg: #14161a;
   --surface: #1b1e23;
@@ -81,6 +55,8 @@
   --a-appsec: #dc95a6;
   --glow-all: #b9a27a;
   color-scheme: dark;
+  --night-ink: #efede8;
+  --night-2: #a9adb5;
 }
 
 [data-lens="all"] { --accent: var(--a-all); }
@@ -293,6 +269,21 @@ header, main, footer { position: relative; z-index: 1; }
 .lens-picker { border: 0; padding: 0; margin: 0; min-width: 0; }
 .lens-picker legend { font-family: var(--font-mono), monospace; font-size: .74rem; text-transform: uppercase; letter-spacing: .14em; color: var(--ink-2); margin-bottom: 12px; padding: 0; }
 .lens-options { display: flex; flex-wrap: wrap; gap: 6px; }
+.lens-note {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; margin: 14px 0 0; max-width: 70ch;
+  color: var(--ink-2); font-size: .95rem; animation: rise 400ms cubic-bezier(.2,.8,.2,1);
+}
+.lens-note-dot {
+  align-self: center; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex: none;
+  animation: note-ping 1.6s ease-out 2;
+}
+@keyframes note-ping { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent); } 100% { box-shadow: 0 0 0 10px transparent; } }
+.lens-note button {
+  all: unset; cursor: pointer; font-weight: 600; color: var(--accent); text-decoration: underline;
+  text-underline-offset: 3px; text-decoration-color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+.lens-note button:hover { text-decoration-color: currentColor; }
+.lens-note button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
 .lens-option {
   position: relative; display: inline-flex; align-items: center; gap: 9px; cursor: pointer;
   padding: 8px 14px; border-radius: 999px; font-weight: 500; font-size: .93rem;
@@ -308,7 +299,10 @@ header, main, footer { position: relative; z-index: 1; }
 /* Sections */
 main > section { padding: clamp(56px, 8vw, 96px) 0 0; }
 .section-head { display: grid; gap: 10px; margin-bottom: 28px; }
-.section-head .label { margin: 0; }
+.section-head .label { margin: 0; display: flex; align-items: center; counter-increment: section; }
+/* Sections are numbered like a spec: 01, 02, 03… */
+.page { counter-reset: section; }
+.section-head .label::after { content: counter(section, decimal-leading-zero); order: -1; margin-right: 12px; color: var(--accent); }
 .section-head h2 { font-size: clamp(1.9rem, 4.2vw, 2.9rem); letter-spacing: -0.015em; }
 
 /* Pitch */
@@ -505,9 +499,16 @@ main > section { padding: clamp(56px, 8vw, 96px) 0 0; }
 
 /* Spot the vulnerability and the AI sit on full-width bands so they stand apart in both themes. */
 .bug, .assistant { position: relative; padding-bottom: clamp(40px, 6vw, 64px); }
+/* The hands-on sections sit on engineer's graph paper instead of a flat colour band: a dot grid
+   that fades out at its edges, with a soft light that follows the pointer (set in Portfolio.tsx). */
 .bug::before, .assistant::before {
   content: ""; position: absolute; z-index: -1; top: clamp(24px, 4vw, 48px); bottom: 0; left: calc(50% - 50vw); right: calc(50% - 50vw);
-  background: var(--band); border-block: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+  background:
+    radial-gradient(520px circle at var(--mx, 70%) var(--my, 30%), color-mix(in srgb, var(--glow) 13%, transparent), transparent 70%),
+    radial-gradient(circle, color-mix(in srgb, var(--ink) 17%, transparent) 1px, transparent 1.4px) center / 22px 22px,
+    color-mix(in srgb, var(--band) 55%, transparent);
+  -webkit-mask-image: linear-gradient(transparent, #000 18%, #000 82%, transparent);
+  mask-image: linear-gradient(transparent, #000 18%, #000 82%, transparent);
 }
 /* Spot the vulnerability */
 .bug-box { background: var(--code-bg); color: var(--code-ink); border-radius: var(--radius); overflow: hidden; max-width: 900px; border: 1px solid rgb(255 255 255 / .07); box-shadow: 0 24px 48px -28px rgb(0 0 0 / .55); }
@@ -532,6 +533,10 @@ main > section { padding: clamp(56px, 8vw, 96px) 0 0; }
 .code li[data-state="miss"] button { background: rgb(255 255 255 / .06); border-left-color: var(--code-dim); text-decoration: line-through; text-decoration-color: var(--code-dim); }
 .bug-verdict, .bug-end { padding: 16px 18px 20px; border-top: 1px solid rgb(255 255 255 / .08); display: grid; gap: 14px; justify-items: start; }
 .bug-verdict p, .bug-end p { margin: 0; max-width: 70ch; }
+.bug-notes { margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px 24px; max-width: 900px; width: 100%; }
+.bug-notes > div { min-width: 0; padding-left: 12px; border-left: 2px solid rgb(255 255 255 / .14); }
+.bug-notes dt { font-family: var(--font-mono), ui-monospace, monospace; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; opacity: .7; margin-bottom: 4px; }
+.bug-notes dd { margin: 0; line-height: 1.55; }
 .bug-end-score { font-family: var(--font-display), system-ui, sans-serif; font-size: 1.6rem; font-weight: 400; }
 .bug-box .btn { --accent: var(--code-ink); background: var(--code-ink); color: var(--code-bg); border-color: var(--code-ink); }
 .bug-box .btn-quiet { color: var(--code-ink); border-color: var(--code-ink); }
@@ -576,7 +581,10 @@ textarea:focus, .ask-form input:focus { border-color: var(--accent); outline: no
 .hint { font-size: .85rem; color: var(--ink-2); }
 .notice { color: var(--ink-2); margin: 12px 0 0; font-size: .95rem; }
 .starters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
-.turns { list-style: none; padding: 0; margin: 0 0 14px; display: grid; gap: 16px; }
+.turns {
+  list-style: none; padding: 0 6px 0 0; margin: 0 0 14px; display: grid; gap: 16px; position: relative;
+  max-height: min(62vh, 560px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin;
+}
 .turns:empty { display: none; }
 .turns p { margin: 0; }
 .q { font-weight: 600; }
@@ -602,7 +610,9 @@ textarea:focus, .ask-form input:focus { border-color: var(--accent); outline: no
 
 /* Contact: the page inverts at the end */
 .contact {
-  position: relative; overflow: hidden; margin-top: 0; padding-block: clamp(64px, 9vw, 120px);
+  /* A full screen of its own, so arriving here from a button lands on "Let's talk", not the toolkit. */
+  position: relative; overflow: hidden; margin-top: 0; padding-block: clamp(96px, 12vw, 160px) clamp(64px, 9vw, 120px);
+  min-height: calc(100svh / var(--zoom, 1)); display: grid; align-content: center;
   background: linear-gradient(var(--contact-top), var(--night) clamp(120px, 16vw, 220px));
   color: var(--night-ink); --bg: var(--night); --ink: var(--night-ink); --ink-2: var(--night-2); --line: var(--night-line);
 }
@@ -731,3 +741,10 @@ textarea:focus, .ask-form input:focus { border-color: var(--accent); outline: no
   .topbar .nav-cta { display: inline-flex; align-items: center; }
   .cert-link, .cert-see { display: inline-flex; align-items: center; min-height: 40px; }
 }
+
+/* Big and 4K screens: scale the whole page up rather than leaving a narrow column in the middle.
+   --zoom lets full-screen sections divide it back out. */
+@media (min-width: 1900px) { html { --zoom: 1.15; zoom: 1.15; } }
+@media (min-width: 2300px) { html { --zoom: 1.35; zoom: 1.35; } }
+@media (min-width: 2900px) { html { --zoom: 1.7; zoom: 1.7; } }
+@media (min-width: 3500px) { html { --zoom: 2; zoom: 2; } }

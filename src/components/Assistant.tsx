@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { evidenceById, type Role } from "@/content/profile";
 import { CUT_MARKER, INPUT_LIMITS, RECOVERABLE, UNAVAILABLE_MESSAGES } from "@/lib/shared";
 import type { MatchOutput } from "@/lib/ai";
@@ -173,12 +173,12 @@ function MatchPanel() {
 type Turn = { q: string; a: string; cut?: boolean };
 
 const STARTERS: Record<Role, string[]> = {
-  all: ["What kind of team does Viktoria do best in?", "What AI products has Viktoria built?"],
-  frontend: ["How does Viktoria approach accessibility?", "What's the most complex UI Viktoria has built?"],
-  product: ["How does Viktoria work with users?", "Tell me about the Vynrr PoC."],
-  fullstack: ["How does Viktoria approach testing?", "Has Viktoria designed APIs?"],
-  consultant: ["How does Viktoria work with clients?", "Tell me about the Vynrr PoC."],
-  appsec: ["What security tooling has Viktoria set up?", "What is Viktoria studying in the MSc?"],
+  all: ["What kind of team does Viktoria do best in?", "What AI products has Viktoria built?", "Where does Viktoria work now?"],
+  frontend: ["How does Viktoria approach accessibility?", "What's the most complex UI Viktoria has built?", "Has Viktoria built data visualisations?"],
+  product: ["How does Viktoria work with users?", "Tell me about the Vynrr PoC.", "How does Viktoria turn vague ideas into products?"],
+  fullstack: ["How does Viktoria approach testing?", "Has Viktoria designed APIs?", "What CI/CD has Viktoria set up?"],
+  consultant: ["How does Viktoria work with clients?", "Tell me about the Vynrr PoC.", "Does Viktoria prefer remote or hybrid work?"],
+  appsec: ["What security tooling has Viktoria set up?", "What is Viktoria studying in the MSc?", "Why is Viktoria interested in cybersecurity?"],
 };
 
 function AskPanel({ role }: { role: Role }) {
@@ -187,7 +187,16 @@ function AskPanel({ role }: { role: Role }) {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const listRef = useRef<HTMLOListElement>(null);
   const full = turns.length >= INPUT_LIMITS.turns;
+
+  // The conversation scrolls inside its own box. A new question moves to the top of the box, so
+  // its answer streams in below it rather than stretching the page.
+  useEffect(() => {
+    const list = listRef.current;
+    const last = list?.lastElementChild as HTMLElement | null;
+    if (list && last) list.scrollTo({ top: last.offsetTop, behavior: "smooth" });
+  }, [turns.length]);
 
   async function ask(q: string) {
     const trimmed = q.trim();
@@ -235,7 +244,7 @@ function AskPanel({ role }: { role: Role }) {
           ))}
         </div>
       )}
-      <ol className="turns" aria-live="polite">
+      <ol className="turns" aria-live="polite" ref={listRef} tabIndex={turns.length ? 0 : -1} aria-label="Conversation">
         {turns.map((t, i) => (
           <li key={i}>
             <p className="q">{t.q}</p>

@@ -500,7 +500,11 @@ export function GitHubProjects() {
 
 /* ---------- Spot the vulnerability ---------- */
 
-const ROUNDS: { lang: string; title: string; lines: string[]; bad: number; name: string; fix: string }[] = [
+// A pool of snippets; each game deals a random three. Every one says what's wrong, how Viktoria
+// would fix it, and what it costs a business if it ships.
+type Snippet = { lang: string; title: string; lines: string[]; bad: number; name: string; why: string; fix: string; risk: string };
+
+const SNIPPETS: Snippet[] = [
   {
     lang: "React",
     title: "A comment component",
@@ -517,7 +521,9 @@ const ROUNDS: { lang: string; title: string; lines: string[]; bad: number; name:
     ],
     bad: 5,
     name: "Stored XSS",
-    fix: "The body is user input rendered as raw HTML, so a comment can carry a script. Render it as text, or sanitise it with an allowlist such as DOMPurify first.",
+    why: "The body is user input rendered as raw HTML, so a comment can carry a script.",
+    fix: "Render it as text, or sanitise it with an allowlist such as DOMPurify, and back it with a Content Security Policy.",
+    risk: "The script runs in every reader's browser: it can steal sessions and act as your users, with the incident costs and loss of trust that follow.",
   },
   {
     lang: "Express",
@@ -531,7 +537,9 @@ const ROUNDS: { lang: string; title: string; lines: string[]; bad: number; name:
     ],
     bad: 1,
     name: "Insecure direct object reference",
-    fix: "Any logged-in user can read any invoice by changing the id. Scope the lookup to the owner, for example findOne({ id, ownerId: req.user.id }).",
+    why: "Any logged-in user can read any invoice by changing the id in the URL.",
+    fix: "Scope the lookup to the owner, for example findOne({ id, ownerId: req.user.id }), and add a test that one user can't read another's invoice.",
+    risk: "Customers see each other's financial data: a reportable personal data breach under UK GDPR, with possible fines and lost customers.",
   },
   {
     lang: "Python",
@@ -544,16 +552,123 @@ const ROUNDS: { lang: string; title: string; lines: string[]; bad: number; name:
     ],
     bad: 2,
     name: "SQL injection",
-    fix: "The email is pasted into the query, so ' OR '1'='1 returns a user. Use a parameterised query: cur.execute(\"... WHERE email = %s\", (email,)).",
+    why: "The email is pasted into the query, so ' OR '1'='1 returns a user.",
+    fix: "Use a parameterised query: cur.execute(\"... WHERE email = %s\", (email,)), and give the app's database user only the access it needs.",
+    risk: "An attacker can read or change the whole users table: stolen credentials, a data breach and possibly the full database.",
+  },
+  {
+    lang: "Next.js",
+    title: "A client-side rates widget",
+    lines: [
+      '"use client";',
+      "",
+      "export async function getRates() {",
+      '  const res = await fetch("https://api.fx.example/rates", {',
+      '    headers: { Authorization: "Bearer sk_live_9f3a71c2" },',
+      "  });",
+      "  return res.json();",
+      "}",
+    ],
+    bad: 4,
+    name: "Secret shipped to the browser",
+    why: "Code in a client component is sent to every visitor, so anyone can read the live key in their dev tools.",
+    fix: "Rotate the key, keep it in a server-side environment variable, and call the API from a server route that the browser calls instead.",
+    risk: "Anyone can use the paid account: surprise bills, rate limits that take your feature down, or access to data behind the key.",
+  },
+  {
+    lang: "Express",
+    title: "A login callback",
+    lines: [
+      'app.get("/login/callback", async (req, res) => {',
+      "  await completeLogin(req);",
+      "  res.redirect(req.query.next);",
+      "});",
+    ],
+    bad: 2,
+    name: "Open redirect",
+    why: "The redirect target comes straight from the URL, so a link on your domain can send people anywhere.",
+    fix: "Only accept relative paths, or check the target against an allowlist of your own URLs, and fall back to the home page.",
+    risk: "Phishing emails can use your trusted login link to land customers on a fake page that harvests their passwords.",
+  },
+  {
+    lang: "Express",
+    title: "An admin route",
+    lines: [
+      'router.delete("/api/users/:id", async (req, res) => {',
+      "  await db.users.delete(req.params.id);",
+      "  res.sendStatus(204);",
+      "});",
+    ],
+    bad: 0,
+    name: "Missing authorisation",
+    why: "Nothing checks who is calling, so anyone who finds the endpoint can delete accounts.",
+    fix: "Require login and an admin role in middleware before the handler runs, log admin actions, and test that ordinary users get a 403.",
+    risk: "Customer accounts and data can be wiped by anyone: an outage, a data-loss incident and a hard conversation with the regulator.",
+  },
+  {
+    lang: "Node.js",
+    title: "Password storage",
+    lines: [
+      'import crypto from "node:crypto";',
+      "",
+      "export function hashPassword(password) {",
+      '  return crypto.createHash("md5").update(password).digest("hex");',
+      "}",
+    ],
+    bad: 3,
+    name: "Weak password hashing",
+    why: "MD5 is fast and unsalted, so leaked hashes can be cracked in bulk within hours.",
+    fix: "Use a slow, salted algorithm built for passwords, such as Argon2id or bcrypt, and rehash old passwords when users next sign in.",
+    risk: "If the database ever leaks, most passwords are recovered, and customers who reuse them lose their other accounts too.",
+  },
+  {
+    lang: "Express",
+    title: "An admin check",
+    lines: [
+      'const token = req.headers.authorization?.split(" ")[1];',
+      "const user = jwt.decode(token);",
+      'if (user?.role === "admin") return next();',
+      "res.sendStatus(403);",
+    ],
+    bad: 1,
+    name: "Unverified JWT",
+    why: "jwt.decode reads the token without checking its signature, so anyone can write their own admin token.",
+    fix: "Use jwt.verify with the secret and a fixed algorithm list, for example { algorithms: [\"HS256\"] }, and keep tokens short-lived.",
+    risk: "Anyone can become an admin: full control of the application and its data.",
+  },
+  {
+    lang: "Flask",
+    title: "A file download",
+    lines: [
+      '@app.get("/files/<path:name>")',
+      "def download(name):",
+      '    return open(f"/srv/uploads/{name}", "rb").read()',
+    ],
+    bad: 2,
+    name: "Path traversal",
+    why: "The filename comes from the URL, so ../../etc/passwd walks out of the uploads folder.",
+    fix: "Use send_from_directory, or resolve the path and reject anything outside the uploads folder, and look files up by id rather than name.",
+    risk: "Attackers can read server files such as configuration and keys, often the first step to a full compromise.",
   },
 ];
 
+const ROUND_COUNT = 3;
+
+function deal(avoid: Snippet[] = []): Snippet[] {
+  const fresh = SNIPPETS.filter((s) => !avoid.includes(s));
+  const from = fresh.length >= ROUND_COUNT ? fresh : SNIPPETS;
+  return [...from].sort(() => Math.random() - 0.5).slice(0, ROUND_COUNT);
+}
+
 export function SpotTheBug() {
+  // The first render uses a fixed set so server and browser agree; the browser then deals at random.
+  const [rounds, setRounds] = useState<Snippet[]>(() => SNIPPETS.slice(0, ROUND_COUNT));
   const [round, setRound] = useState(0);
   const [picked, setPicked] = useState<number | null>(null);
   const [score, setScore] = useState(0);
-  const done = round >= ROUNDS.length;
-  const r = ROUNDS[Math.min(round, ROUNDS.length - 1)];
+  useEffect(() => setRounds(deal()), []);
+  const done = round >= rounds.length;
+  const r = rounds[Math.min(round, rounds.length - 1)];
   const answered = picked !== null;
 
   function pick(i: number) {
@@ -573,20 +688,20 @@ export function SpotTheBug() {
         <p className="label">Try it</p>
         <h2 id="bug-title">Spot the vulnerability</h2>
         <p className="muted">
-          The kind of thing Viktoria catches in code review. Click the line you&apos;d flag.
+          The kind of thing Viktoria catches in code review. Click the line you&apos;d flag. There are three snippets each game, dealt at random.
         </p>
       </div>
       <div className="bug-box">
         <div className="bug-bar">
           <span>{done ? "Finished" : `${r.lang} · ${r.title}`}</span>
           <span className="bug-score" aria-live="polite">
-            {score}/{ROUNDS.length}
+            {score}/{rounds.length}
           </span>
         </div>
         {done ? (
           <div className="bug-end">
             <p className="bug-end-score">
-              {score === ROUNDS.length ? "Clean sweep." : score > 0 ? "Not bad." : "Tricky, right?"} You found {score} of {ROUNDS.length}.
+              {score === rounds.length ? "Clean sweep." : score > 0 ? "Not bad." : "Tricky, right?"} You found {score} of {rounds.length}.
             </p>
             <p>
               Viktoria does this for real: triaging findings at BlackRock, running SonarQube and Snyk in CI, and placing 10th out of
@@ -600,6 +715,7 @@ export function SpotTheBug() {
                 type="button"
                 className="btn-quiet"
                 onClick={() => {
+                  setRounds((prev) => deal(prev));
                   setRound(0);
                   setScore(0);
                   setPicked(null);
@@ -615,7 +731,7 @@ export function SpotTheBug() {
               {r.lines.map((line, i) => {
                 const state = !answered ? undefined : i === r.bad ? "bad" : i === picked ? "miss" : undefined;
                 return (
-                  <li key={`${round}-${i}`} data-state={state}>
+                  <li key={`${r.title}-${i}`} data-state={state}>
                     <button type="button" onClick={() => pick(i)} disabled={answered} aria-label={`Line ${i + 1}: ${line.trim()}`}>
                       <span className="ln" aria-hidden="true">
                         {i + 1}
@@ -629,10 +745,20 @@ export function SpotTheBug() {
             {answered && (
               <div className="bug-verdict" role="status">
                 <p>
-                  <strong>{picked === r.bad ? "Got it." : `Not quite, it's line ${r.bad + 1}.`}</strong> {r.name}. {r.fix}
+                  <strong>{picked === r.bad ? "Got it." : `Not quite, it's line ${r.bad + 1}.`}</strong> {r.name}. {r.why}
                 </p>
+                <dl className="bug-notes">
+                  <div>
+                    <dt>How Viktoria would fix it</dt>
+                    <dd>{r.fix}</dd>
+                  </div>
+                  <div>
+                    <dt>Business risk if it ships</dt>
+                    <dd>{r.risk}</dd>
+                  </div>
+                </dl>
                 <button type="button" className="btn" onClick={next}>
-                  {round === ROUNDS.length - 1 ? "See score" : "Next snippet"}
+                  {round === rounds.length - 1 ? "See score" : "Next snippet"}
                 </button>
               </div>
             )}

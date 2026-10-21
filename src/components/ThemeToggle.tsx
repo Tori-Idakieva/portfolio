@@ -10,13 +10,8 @@ export function ThemeToggle() {
   useEffect(() => {
     const sync = () => setLocal(effectiveTheme());
     sync();
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    mq.addEventListener("change", sync);
     window.addEventListener(THEME_EVENT, sync);
-    return () => {
-      mq.removeEventListener("change", sync);
-      window.removeEventListener(THEME_EVENT, sync);
-    };
+    return () => window.removeEventListener(THEME_EVENT, sync);
   }, []);
 
   const next = theme === "dark" ? "light" : "dark";

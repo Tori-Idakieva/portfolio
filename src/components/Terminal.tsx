@@ -24,6 +24,16 @@ const HELP: Record<string, string> = {
   clear: "clear the screen",
 };
 const MAX_INPUT = 40;
+
+// What "whoami" says for each role lens: who Viktoria is for that role, and the proof in one line.
+const WHOAMI: Record<Role, [string, string]> = {
+  all: [`Software engineer, ${person.location}`, "Ten years shipping frontend and full-stack software."],
+  frontend: ["Frontend engineer: React, TypeScript, data-rich UI", "Built Harrier's UI at Isode and a custom React reporting UI at BlackRock."],
+  product: ["Product engineer: users, discovery, delivery", "Took two AI products from idea to MVP with BlackRock's legal teams."],
+  fullstack: ["Full-stack engineer: APIs, testing, CI/CD", "React frontends, Python endpoints and the pipelines that ship them."],
+  consultant: ["Consultant: client delivery, advising founders", "Two award-winning client apps at ANDigital, an investor-ready PoC for Vynrr."],
+  appsec: ["Security-minded engineer, MSc Ethical Hacking", "Security+, 10th of hundreds in BlackRock's CTF, SonarQube and Snyk in CI."],
+};
 const MAX_LINES = 80;
 
 // Normalise what a visitor types: printable ASCII only, single spaces, lower case, bounded length.
@@ -37,20 +47,18 @@ export function cleanCommand(raw: string): string {
     .slice(0, MAX_INPUT);
 }
 
-// The light switch: "lights off/on", "theme dark/light/auto". Returns null for anything else.
+// The light switch: "lights off/on" or "theme dark/light". Returns null for anything else.
 function lights(c: string): Line[] | null {
-  const want =
-    c === "lights off" || c === "theme dark" ? "dark" : c === "lights on" || c === "theme light" ? "light" : c === "theme auto" ? "system" : null;
+  const want = c === "lights off" || c === "theme dark" ? "dark" : c === "lights on" || c === "theme light" ? "light" : null;
   if (c === "theme" || c === "lights") {
     return [
       { kind: "row", head: "Now", meta: `${effectiveTheme()} mode` },
-      { kind: "dim", text: "Try: lights off, lights on, or theme auto to follow your device." },
+      { kind: "dim", text: "Try: lights off or lights on." },
     ];
   }
   if (!want) return null;
   const before = effectiveTheme();
   setTheme(want);
-  if (want === "system") return [{ kind: "ok", text: `Following your device: ${effectiveTheme()} mode.` }];
   if (before === want) return [{ kind: "dim", text: want === "dark" ? "The lights are already off." : "The lights are already on." }];
   return [{ kind: "ok", text: want === "dark" ? "*click* Lights off. Easier on the eyes." : "*click* Lights on." }];
 }
@@ -61,14 +69,16 @@ function run(c: string, role: Role): Line[] | "clear" | "hire" {
   const text = (t: string): Line => ({ kind: "text", text: t });
   const dim = (t: string): Line => ({ kind: "dim", text: t });
   switch (c) {
-    case "whoami":
+    case "whoami": {
+      const [what, proof] = WHOAMI[role];
       return [
         { kind: "title", text: person.name },
-        text(`Software engineer, ${person.location}`),
-        text("Ten years shipping frontend and fullstack software."),
-        dim(role === "all" ? "Pick a role below the terminal to tailor the page." : `Viewing as: ${ROLE_LABELS[role]}`),
+        text(what),
+        text(proof),
+        dim(role === "all" ? "Pick a role below the terminal to tailor the page." : `Viewing as: ${ROLE_LABELS[role]}. The page below has been tailored to match.`),
         dim(effectiveTheme() === "dark" ? "Too dark in here? Type: lights on" : "Bit bright in here? Type: lights off"),
       ];
+    }
     case "experience":
       return [
         { kind: "title", text: "Experience" },
@@ -201,6 +211,16 @@ export function Terminal({ role }: { role: Role }) {
     runningRef.current = false;
     setBusy(false);
   }, []);
+
+  // Picking a role re-runs whoami, so the terminal answers for that role and shows the page changed.
+  const firstRole = useRef(true);
+  useEffect(() => {
+    if (firstRole.current) {
+      firstRole.current = false;
+      return;
+    }
+    exec("whoami");
+  }, [role, exec]);
 
   // Introduce itself once the header has settled.
   useEffect(() => {

@@ -10,7 +10,7 @@ The source of [viktoriaidakieva.co.uk](https://viktoriaidakieva.co.uk): a portfo
 
 ## What it does
 
-- **Role lens.** Pick Frontend, Product Engineer, Fullstack, Consultant or Cybersecurity and the page reorders its experience, highlights the relevant tools and recolours itself. Links like `/?role=appsec` open with a lens already set.
+- **Role lens.** Pick Frontend, Product Engineer, Full-stack, Consultant or Cybersecurity and the page reorders its experience, highlights the relevant tools and recolours itself. Links like `/?role=appsec` open with a lens already set.
 - **Header terminal.** Visitors can type or click commands (`whoami`, `experience`, `certs`, `stack`, `contact`, `sudo hire viktoria`) to explore the CV.
 - **Spot the vulnerability.** A short interactive code review exercise.
 - **Ask an AI.** Questions are answered only from the CV in `src/content/profile.ts`, with links to the evidence behind each claim. A job match mode marks each requirement in a pasted job ad as Strong, Partial or Gap.
