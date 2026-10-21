@@ -5,6 +5,7 @@ import { evidence, orderedEvidence, person, pitches, ROLE_LABELS, ROLES, type Ro
 import { JUMP_EVENT, scrollToElement } from "@/lib/scroll";
 import { Assistant, PREVIEW } from "./Assistant";
 import { Terminal } from "./Terminal";
+import { ExternalLink } from "./ExternalLink";
 import { SectionRail } from "./SectionRail";
 import { ThemeToggle } from "./ThemeToggle";
 import { Certifications, EvidenceList, GitHubProjects, matches, SpotTheBug, Stats, Timeline, Toolkit, type Filter } from "./Showcase";
@@ -396,11 +397,11 @@ function Contact() {
             <dd>
               <ul className="links">
                 <li>
-                  <a href={person.github}>GitHub ↗</a>
+                  <ExternalLink href={person.github}>GitHub ↗</ExternalLink>
                 </li>
                 {person.linkedin && (
                   <li>
-                    <a href={person.linkedin}>LinkedIn ↗</a>
+                    <ExternalLink href={person.linkedin}>LinkedIn ↗</ExternalLink>
                   </li>
                 )}
                 <li>

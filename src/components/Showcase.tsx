@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { ExternalLink } from "./ExternalLink";
 import { JUMP_EVENT, scrollToElement } from "@/lib/scroll";
 import claudeBadge from "@/assets/certs/claude-developer-foundations.png";
 import securityPlusBadge from "@/assets/certs/comptia-security-plus.png";
@@ -399,11 +400,11 @@ function Row({ item, role, onFilter, showOrg }: { item: Evidence; role: Role; on
           )}
           {(item.link || item.sources) && (
             <p className="source">
-              {item.link && <a href={item.link}>View the code on GitHub</a>}
+              {item.link && <ExternalLink href={item.link}>View the code on GitHub</ExternalLink>}
               {item.sources?.map((s) => (
-                <a key={s.href} href={s.href}>
+                <ExternalLink key={s.href} href={s.href}>
                   {s.label}
-                </a>
+                </ExternalLink>
               ))}
             </p>
           )}
@@ -465,9 +466,9 @@ export function Certifications() {
                 </li>
               ))}
             </ul>
-            <a className="cert-link" href={c.link}>
+            <ExternalLink className="cert-link" href={c.link}>
               About this certification ↗
-            </a>
+            </ExternalLink>
           </li>
         ))}
       </ul>
@@ -486,11 +487,11 @@ export function GitHubProjects() {
       <ul className="repo-list">
         {repos.map((r) => (
           <li key={r.id} id={r.id}>
-            <a href={r.link}>
+            <ExternalLink href={r.link}>
               <span className="repo-name">{r.title}</span>
               <span className="repo-meta">{r.period}</span>
               <span className="repo-short">{r.short}</span>
-            </a>
+            </ExternalLink>
           </li>
         ))}
       </ul>
