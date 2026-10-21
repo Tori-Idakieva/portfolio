@@ -1,11 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { orderedEvidence, person, pitches, ROLE_LABELS, ROLES, type Role } from "@/content/profile";
+import { evidence, orderedEvidence, person, pitches, ROLE_LABELS, ROLES, type Role } from "@/content/profile";
+import { JUMP_EVENT, scrollToElement } from "@/lib/scroll";
 import { Assistant, PREVIEW } from "./Assistant";
 import { Terminal } from "./Terminal";
 import { ThemeToggle } from "./ThemeToggle";
-import { Certifications, EvidenceList, GitHubProjects, SpotTheBug, Stats, Timeline, Toolkit, type Filter } from "./Showcase";
+import { Certifications, EvidenceList, GitHubProjects, matches, SpotTheBug, Stats, Timeline, Toolkit, type Filter } from "./Showcase";
 
 const ROLE_BLURBS: Record<Role, string> = {
   all: "The whole picture",
@@ -84,6 +85,57 @@ export function Portfolio({ initialRole }: { initialRole: Role }) {
     },
     [withTransition],
   );
+
+  // In-page jump links (#id) from the AI's citations, the stats and the certificates. They scroll
+  // without touching the address or history. The target may be hidden by the current filter or
+  // folded into "Less relevant", so make it visible first.
+  const filterRef = useRef(filter);
+  filterRef.current = filter;
+  const jumpTo = useCallback((id: string) => {
+    const item = evidence.find((e) => e.id === id);
+    if (item && filterRef.current && !matches(item, filterRef.current)) setFilter(null);
+    requestAnimationFrame(() => {
+      const el = document.getElementById(id);
+      const folded = el?.closest("details");
+      if (folded && !folded.open) folded.open = true;
+      window.dispatchEvent(new CustomEvent(JUMP_EVENT, { detail: id }));
+      if (el && !el.classList.contains("row")) {
+        el.classList.remove("jump-flash");
+        void el.offsetWidth; // restart the animation on a repeat click
+        el.classList.add("jump-flash");
+      }
+      scrollToElement(id);
+    });
+  }, []);
+
+  useEffect(() => {
+    const known = (id: string) => evidence.some((e) => e.id === id);
+    const onClick = (e: MouseEvent) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const id = (e.target as Element | null)?.closest?.("a[href^='#']")?.getAttribute("href")?.slice(1);
+      if (!id || !known(id)) return;
+      e.preventDefault();
+      jumpTo(id);
+    };
+    document.addEventListener("click", onClick);
+    // A shared link such as /#study-msc: wait for the page to settle, jump, then tidy the address.
+    const fromHash = window.location.hash.slice(1);
+    let timer = 0;
+    if (known(fromHash)) {
+      timer = window.setTimeout(() => {
+        jumpTo(fromHash);
+        try {
+          window.history.replaceState(null, "", window.location.pathname + window.location.search);
+        } catch {
+          // Some embedded viewers block history changes.
+        }
+      }, 450);
+    }
+    return () => {
+      document.removeEventListener("click", onClick);
+      window.clearTimeout(timer);
+    };
+  }, [jumpTo]);
 
   // Sections slide up as they enter the viewport. Anything already on screen stays put.
   useEffect(() => {

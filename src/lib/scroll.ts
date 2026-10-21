@@ -6,6 +6,9 @@
 // target. So: wait for React to render, scroll, wait for the scroll to settle, re-measure, and
 // glide the rest of the way. Any touch, wheel or key from the visitor hands control back.
 
+// Sent with an element id when a jump link lands, so the target can open and light up.
+export const JUMP_EVENT = "jump:arrive";
+
 const SETTLE_FRAMES = 8;
 const MAX_TRIES = 3;
 const MAX_WAIT_MS = 2500;
@@ -43,15 +46,18 @@ export function scrollToElement(id: string, block: ScrollLogicalPosition = "star
     if (!el || cancelled) return stop();
     // Measure where the browser would put the element, honouring scroll-margin and padding,
     // then move back and glide there. Both jumps happen before the next paint, so nothing flickers.
+    // The page sets scroll-behavior: smooth, so switch it off for the measuring jumps. ("instant"
+    // as a scroll option is not supported everywhere.)
+    const root = document.documentElement;
     const from = window.scrollY;
-    el.scrollIntoView({ behavior: "instant", block });
+    root.style.scrollBehavior = "auto";
+    el.scrollIntoView({ block });
     const to = window.scrollY;
+    if (Math.abs(to - from) >= 4 && tries < MAX_TRIES && !reducedMotion()) window.scrollTo(0, from);
+    root.style.scrollBehavior = "";
     if (Math.abs(to - from) < 4 || tries >= MAX_TRIES) return stop();
     tries += 1;
-    if (!reducedMotion()) {
-      window.scrollTo({ top: from, behavior: "instant" });
-      window.scrollTo({ top: to, behavior: "smooth" });
-    }
+    if (!reducedMotion()) window.scrollTo({ top: to, behavior: "smooth" });
     whenSettled(go);
   };
   requestAnimationFrame(() => requestAnimationFrame(go));

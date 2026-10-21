@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { scrollToElement } from "@/lib/scroll";
+import { JUMP_EVENT, scrollToElement } from "@/lib/scroll";
 import claudeBadge from "@/assets/certs/claude-developer-foundations.png";
 import securityPlusBadge from "@/assets/certs/comptia-security-plus.png";
 import {
@@ -33,7 +33,7 @@ function reducedMotion() {
   return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-function matches(item: Evidence, filter: Filter): boolean {
+export function matches(item: Evidence, filter: Filter): boolean {
   if (!filter) return true;
   if (filter.type === "org") return item.org.includes(filter.value);
   if (filter.type === "kind") return item.kind === filter.value;
@@ -345,48 +345,19 @@ function Row({ item, role, onFilter, showOrg }: { item: Evidence; role: Role; on
   const weight = role === "all" ? null : item.weight[role];
   const why = role === "all" ? null : item.why?.[role];
 
-  // Arriving here from a citation, stat or certificate link opens the row and briefly lights it up
-  // so the eye finds it. The jump scrolls within the page without touching the address or history,
-  // so the browser's back button still means "leave this page".
+  // Arriving from a citation, stat or certificate link (see jumpTo in Portfolio) opens the row and
+  // briefly lights it up so the eye finds it.
   useEffect(() => {
-    const arrive = () => {
+    const onArrive = (e: Event) => {
+      if ((e as CustomEvent<string>).detail !== item.id) return;
       setOpen(true);
       flashRef.current?.animate([{ opacity: 1 }, { opacity: 1, offset: 0.35 }, { opacity: 0 }], {
         duration: reducedMotion() ? 1600 : 2600,
         easing: "ease-out",
       });
     };
-    const onClick = (e: MouseEvent) => {
-      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-      const link = (e.target as Element | null)?.closest?.("a[href^='#']");
-      if (link?.getAttribute("href") !== `#${item.id}`) return;
-      e.preventDefault();
-      scrollToElement(item.id);
-      arrive();
-    };
-    // A shared link such as /#study-msc still lands here. Wait for the page to settle so the
-    // highlight is seen, then tidy the address.
-    let timer = 0;
-    const onHash = () => {
-      if (window.location.hash !== `#${item.id}`) return;
-      timer = window.setTimeout(() => {
-        scrollToElement(item.id);
-        arrive();
-        try {
-          window.history.replaceState(null, "", window.location.pathname + window.location.search);
-        } catch {
-          // Some embedded viewers block history changes; the row still opens.
-        }
-      }, 450);
-    };
-    onHash();
-    document.addEventListener("click", onClick);
-    window.addEventListener("hashchange", onHash);
-    return () => {
-      window.clearTimeout(timer);
-      document.removeEventListener("click", onClick);
-      window.removeEventListener("hashchange", onHash);
-    };
+    window.addEventListener(JUMP_EVENT, onArrive);
+    return () => window.removeEventListener(JUMP_EVENT, onArrive);
   }, [item.id]);
 
   return (
@@ -467,7 +438,7 @@ export function Certifications() {
       </div>
       <ul className="cert-list">
         {certifications.map((c) => (
-          <li key={c.id} className="cert">
+          <li key={c.id} id={c.id} className="cert">
             <div className="cert-head">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img className="cert-badge" src={BADGES[c.badge].src} alt={`${c.name} badge`} width={88} height={88} loading="lazy" />

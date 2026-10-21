@@ -355,9 +355,16 @@ main > section { padding: clamp(56px, 8vw, 96px) 0 0; }
 .group-head p { margin: 6px 0 0; font-family: var(--font-mono), monospace; font-size: .78rem; color: var(--ink-2); line-height: 1.5; }
 .rows { list-style: none; margin: 0; padding: 0; }
 .row { border-bottom: 1px solid var(--line); scroll-margin-top: 88px; }
+.cert, .repos li { scroll-margin-top: 88px; }
 .group .row:first-child .row-head { padding-top: 4px; }
 /* A soft panel that lights up a row someone just jumped to, then fades (see Row in Showcase.tsx). */
 .row { position: relative; }
+/* The same light-up for jump targets that aren't experience rows, such as certificate cards. */
+.jump-flash { animation: jump-flash 2.6s ease-out; }
+@keyframes jump-flash {
+  0%, 35% { box-shadow: 0 0 0 2px var(--accent), 0 0 0 8px color-mix(in srgb, var(--accent) 18%, transparent); }
+  100% { box-shadow: 0 0 0 2px transparent, 0 0 0 8px transparent; }
+}
 .row-flash {
   position: absolute; inset: 0 -12px 0 -16px; z-index: -1; opacity: 0; pointer-events: none; border-radius: var(--radius);
   background: color-mix(in srgb, var(--accent) 12%, transparent); box-shadow: inset 3px 0 0 var(--accent);

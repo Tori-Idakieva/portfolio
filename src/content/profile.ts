@@ -460,7 +460,7 @@ export const certifications: {
     summary:
       "A widely recognised baseline for security work, covering five areas: general security concepts, threats and mitigations, security architecture, security operations, and governance, risk and compliance. Renewed in 2026, so it stays current until 2029.",
     adds: [
-      { skill: "Vulnerability management", detail: "Finding, prioritising and fixing weaknesses, as Viktoria does triaging flagged vulnerabilities at BlackRock.", evidence: "blk-vuln-triage" },
+      { skill: "Vulnerability management", detail: "Finding, prioritising and fixing weaknesses, as Viktoria did triaging flagged vulnerabilities at BlackRock.", evidence: "blk-vuln-triage" },
       { skill: "Security operations and automation", detail: "Monitoring and automated checks, in practice the SonarQube scanning Viktoria set up in CI at BlackRock and ANDigital, plus Snyk at ANDigital.", evidence: "blk-security-scanning" },
       { skill: "Threats and secure design", detail: "Common attacks and how to design them out, the basis of Viktoria's OWASP-aligned frontend work.", evidence: "isode-email-client" },
       { skill: "Governance and risk", detail: "Policies, compliance and risk thinking that fit regulated settings such as BlackRock." },
