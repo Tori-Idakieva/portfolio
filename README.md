@@ -31,7 +31,7 @@ The AI endpoint is public, so it is treated as untrusted input that costs money.
 | Cross-site use of the API | Same-origin check, JSON content type required, 16 KB body cap before parsing. | `api/ask/route.ts` |
 | Malformed input | Zod schemas with length limits on every field. | `lib/ai.ts` |
 | Prompt injection | Visitor text is wrapped and labelled as data. The model answers only from the profile, never reveals contact details beyond the public ones, and job matches are validated against a schema. Invented evidence ids are removed. | `lib/ai.ts` |
-| Runaway cost | Per-visitor limits (6 per 10 minutes, 30 per day), a site-wide cap of 1,500 answers per day, a daily token budget and per-answer `max_tokens`. Production without Redis keeps the AI off (fails closed). Setting the Redis key `ai:off` to `1` switches it off instantly. | `lib/guard.ts` |
+| Runaway cost | Per-visitor limits (6 per 10 minutes, 50 per day), a site-wide cap of 1,500 answers per day, a daily token budget and per-answer `max_tokens`. Production without Redis keeps the AI off (fails closed). Setting the Redis key `ai:off` to `1` switches it off instantly. | `lib/guard.ts` |
 | Secrets | The API key exists only as a Vercel environment variable on the server. The browser never talks to Anthropic. | `api/ask/route.ts` |
 | Dependencies | CI runs `npm audit` on production dependencies, and Dependabot opens weekly update PRs. | `.github/` |
 

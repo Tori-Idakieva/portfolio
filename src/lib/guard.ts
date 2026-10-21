@@ -18,11 +18,11 @@ const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_A
 const redis = redisUrl && redisToken ? new Redis({ url: redisUrl, token: redisToken }) : null;
 
 const short = redis && new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(6, "10 m"), prefix: "rl:short" });
-const daily = redis && new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(30, "1 d"), prefix: "rl:day" });
+const daily = redis && new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(50, "1 d"), prefix: "rl:day" });
 const global = redis && new Ratelimit({ redis, limiter: Ratelimit.fixedWindow(1500, "1 d"), prefix: "rl:global" });
 
 // Daily token budget across all visitors. Cache reads count at a tenth, as they cost about a tenth.
-const DAILY_TOKENS = Number(process.env.DAILY_TOKEN_BUDGET) || 250_000;
+const DAILY_TOKENS = Number(process.env.DAILY_TOKEN_BUDGET) || 600_000;
 const tokenKey = () => `tok:${new Date().toISOString().slice(0, 10)}`;
 
 export type Usage = {
