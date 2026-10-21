@@ -270,14 +270,13 @@ header, main, footer { position: relative; z-index: 1; }
 .lens-picker legend { font-family: var(--font-mono), monospace; font-size: .74rem; text-transform: uppercase; letter-spacing: .14em; color: var(--ink-2); margin-bottom: 12px; padding: 0; }
 .lens-options { display: flex; flex-wrap: wrap; gap: 6px; }
 .lens-note {
-  display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; margin: 14px 0 0; max-width: 70ch;
-  color: var(--ink-2); font-size: .95rem; animation: rise 400ms cubic-bezier(.2,.8,.2,1);
+  margin: 12px 0 0; max-width: 72ch; color: var(--ink-2); font-size: .93rem; line-height: 1.55;
+  animation: rise 400ms cubic-bezier(.2,.8,.2,1);
 }
 .lens-note-dot {
-  align-self: center; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex: none;
-  animation: note-ping 1.6s ease-out 2;
+  display: inline-block; vertical-align: middle; width: 7px; height: 7px; margin: -2px 8px 0 2px;
+  border-radius: 50%; background: var(--accent); animation: note-ping 1.6s ease-out 2;
 }
-@keyframes note-ping { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent); } 100% { box-shadow: 0 0 0 10px transparent; } }
 .lens-note button {
   all: unset; cursor: pointer; font-weight: 600; color: var(--accent); text-decoration: underline;
   text-underline-offset: 3px; text-decoration-color: color-mix(in srgb, var(--accent) 40%, transparent);
@@ -298,7 +297,23 @@ header, main, footer { position: relative; z-index: 1; }
 
 /* Sections */
 main > section { padding: clamp(56px, 8vw, 96px) 0 0; }
-.section-head { display: grid; gap: 10px; margin-bottom: 28px; }
+/* Section heads read like a spec sheet: an ink rule, the number and name, then the title with its
+   note set beside it rather than stacked under it. */
+.section-head {
+  position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 36ch);
+  column-gap: clamp(24px, 5vw, 72px); row-gap: 14px; align-items: end;
+  padding-top: 16px; margin-bottom: 36px;
+}
+.section-head::before {
+  content: ""; position: absolute; inset: 0 0 auto; height: 1px; background: var(--ink); transform-origin: left;
+}
+.section-head .label { grid-column: 1 / -1; }
+.section-head h2 { grid-column: 1; margin: 0; }
+.section-head .muted { grid-column: 2; padding-bottom: 6px; font-size: .95rem; }
+@media (max-width: 820px) {
+  .section-head { grid-template-columns: minmax(0, 1fr); }
+  .section-head .muted { grid-column: 1; padding-bottom: 0; }
+}
 .section-head .label { margin: 0; display: flex; align-items: center; counter-increment: section; }
 /* Sections are numbered like a spec: 01, 02, 03… */
 .page { counter-reset: section; }
@@ -666,12 +681,8 @@ textarea:focus, .ask-form input:focus { border-color: var(--accent); outline: no
 .reveal.stats.in li { opacity: 1; translate: 0 0; }
 
 /* Section headings: a short rule draws in before the label, then the title rises. */
-.section-head .label::before {
-  content: ""; display: inline-block; width: 28px; height: 1px; margin-right: 12px; vertical-align: middle;
-  background: currentColor; transform-origin: left;
-}
-.reveal .section-head .label::before { scale: 0 1; transition: scale 900ms cubic-bezier(.2,.8,.2,1) 150ms; }
-.reveal.in .section-head .label::before { scale: 1 1; }
+.reveal .section-head::before { scale: 0 1; transition: scale 1100ms cubic-bezier(.2,.8,.2,1) 100ms; }
+.reveal.in .section-head::before { scale: 1 1; }
 .reveal .section-head h2 { opacity: 0; translate: 0 14px; transition: opacity 800ms ease 250ms, translate 900ms cubic-bezier(.2,.8,.2,1) 250ms; }
 .reveal.in .section-head h2 { opacity: 1; translate: 0 0; }
 
@@ -702,7 +713,7 @@ textarea:focus, .ask-form input:focus { border-color: var(--accent); outline: no
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .reveal, .reveal *, .reveal .section-head .label::before { opacity: 1 !important; translate: none !important; scale: none !important; }
+  .reveal, .reveal *, .reveal .section-head::before { opacity: 1 !important; translate: none !important; scale: none !important; }
   .hero-glow { display: none; }
   .contact-glow { animation: none; }
 }
@@ -748,3 +759,34 @@ textarea:focus, .ask-form input:focus { border-color: var(--accent); outline: no
 @media (min-width: 2300px) { html { --zoom: 1.35; zoom: 1.35; } }
 @media (min-width: 2900px) { html { --zoom: 1.7; zoom: 1.7; } }
 @media (min-width: 3500px) { html { --zoom: 2; zoom: 2; } }
+
+/* Section index on the right edge, wide screens only. */
+.rail { display: none; }
+@media (min-width: 1280px) and (hover: hover) {
+  .rail {
+    display: block; position: fixed; z-index: 20; top: 50%; right: max(14px, calc((100vw - 1320px) / 2 - 64px));
+    translate: 12px -50%; opacity: 0; pointer-events: none; transition: opacity 300ms, translate 400ms cubic-bezier(.2,.8,.2,1);
+  }
+  .rail[data-shown="true"] { opacity: 1; translate: 0 -50%; pointer-events: auto; }
+  .rail ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+  .rail button {
+    all: unset; cursor: pointer; position: relative; display: flex; align-items: center; justify-content: flex-end; gap: 10px;
+    padding: 5px 0; font-family: var(--font-mono), ui-monospace, monospace; font-size: .7rem; letter-spacing: .1em;
+    color: var(--ink-2); font-variant-numeric: tabular-nums;
+  }
+  .rail-num { display: flex; align-items: center; justify-content: flex-end; gap: 8px; width: 48px; }
+  .rail-num::after {
+    content: ""; width: 10px; margin-left: auto; height: 1px; background: currentColor; transition: width 300ms cubic-bezier(.2,.8,.2,1);
+  }
+  .rail-label {
+    position: absolute; right: calc(100% + 4px); top: 50%; margin-top: -10px; line-height: 16px;
+    text-transform: uppercase; white-space: nowrap; opacity: 0; translate: 6px 0;
+    transition: opacity 200ms, translate 300ms cubic-bezier(.2,.8,.2,1);
+    background: var(--bg); padding: 2px 6px; border-radius: 4px;
+  }
+  .rail button:hover .rail-label, .rail button:focus-visible .rail-label { opacity: 1; translate: 0 0; }
+  .rail button:hover, .rail button[aria-current] { color: var(--ink); }
+  .rail button[aria-current] .rail-num { color: var(--accent); }
+  .rail button[aria-current] .rail-num::after { width: 22px; }
+  .rail button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+}

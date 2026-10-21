@@ -5,6 +5,7 @@ import { evidence, orderedEvidence, person, pitches, ROLE_LABELS, ROLES, type Ro
 import { JUMP_EVENT, scrollToElement } from "@/lib/scroll";
 import { Assistant, PREVIEW } from "./Assistant";
 import { Terminal } from "./Terminal";
+import { SectionRail } from "./SectionRail";
 import { ThemeToggle } from "./ThemeToggle";
 import { Certifications, EvidenceList, GitHubProjects, matches, SpotTheBug, Stats, Timeline, Toolkit, type Filter } from "./Showcase";
 
@@ -261,6 +262,7 @@ onFilter={chooseFilter}
         />
         <Toolkit filter={filter} onFilter={chooseFilter} />
       </main>
+      <SectionRail />
 
       <Contact />
     </div>
