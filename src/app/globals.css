@@ -631,10 +631,22 @@ textarea:focus, .ask-form input:focus { border-color: var(--accent); outline: no
   max-height: 240px; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin;
 }
 .job-ad-text:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.job-edit { display: grid; gap: 10px; align-content: start; }
+.job-edit label { font-weight: 600; font-size: .95rem; }
+.match-result[aria-busy="true"] .match-actions { opacity: .6; }
+/* Wide screens: the ad and the results sit side by side in one screen-high frame. Each column
+   scrolls on its own, so the summary and chart stay in view while you read down the list. */
 @media (min-width: 1000px) {
-  .match-compare:has(> .job-ad[open]) { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); align-items: start; }
-  .job-ad[open] { position: sticky; top: 88px; }
-  .job-ad-text { max-height: min(70vh, 720px); }
+  .match-compare { --mc-h: max(520px, min(calc(100svh / var(--zoom, 1) - 140px), 880px)); height: var(--mc-h); align-items: stretch; }
+  .match-compare:has(> .job-ad[open]), .match-compare:has(> .job-edit) { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); }
+  .match-compare > .job-ad { min-height: 0; }
+  .job-ad[open] .job-ad-text { height: calc(var(--mc-h) - 42px); max-height: none; }
+  .job-edit { grid-template-rows: auto minmax(0, 1fr) auto; align-content: stretch; }
+  .job-edit textarea { height: 100%; resize: none; }
+  .match-compare .match-result { display: flex; flex-direction: column; min-height: 0; overflow-y: auto; scrollbar-width: thin; }
+  .match-compare .match-result > * { flex: none; }
+  .match-compare .scroll-hint { flex: 1 1 auto; min-height: 160px; display: flex; flex-direction: column; }
+  .match-compare .reqs { flex: 1 1 auto; min-height: 0; max-height: none; }
 }
 .link-btn { background: none; border: 0; padding: 0; font: inherit; font-size: .9rem; color: var(--ink-2); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .link-btn:hover { color: var(--ink); }
