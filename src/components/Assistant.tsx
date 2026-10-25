@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { evidenceById, type Role } from "@/content/profile";
 import { CUT_MARKER, INPUT_LIMITS, RECOVERABLE, UNAVAILABLE_MESSAGES } from "@/lib/shared";
 import type { MatchOutput } from "@/lib/ai";
+import { GUESS_LABELS, guessVerdict, MatchLoading, type Guess } from "./MatchLoading";
 
 type Unavailable = { unavailable: string };
 
@@ -96,9 +97,11 @@ function MatchPanel() {
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<MatchOutput | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [guess, setGuess] = useState<Guess | null>(null);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    setGuess(null);
     setBusy(true);
     setNotice(null);
     setResult(null);
@@ -140,9 +143,11 @@ function MatchPanel() {
         </button>
         <span className="hint">{job.length}/{INPUT_LIMITS.jobChars}. Sent to Claude to answer, not stored by this site.</span>
       </div>
+      {busy && <MatchLoading job={job} guess={guess} onGuess={setGuess} />}
       {notice && <Notice reason={notice} />}
       {result && (
         <div className="match-result" aria-live="polite">
+          {guess && <GuessResult guess={guess} result={result} />}
           <p className="match-summary">
             <Cited text={result.summary} />
           </p>
@@ -173,6 +178,18 @@ function MatchPanel() {
         </div>
       )}
     </form>
+  );
+}
+
+function GuessResult({ guess, result }: { guess: Guess; result: MatchOutput }) {
+  const total = result.requirements.length;
+  const strong = result.requirements.filter((r) => r.strength === "strong").length;
+  const { right, actual } = guessVerdict(guess, strong, total);
+  return (
+    <p className="ml-verdict" data-right={right}>
+      {right ? "You called it." : `Not quite: you guessed ${GUESS_LABELS[guess].toLowerCase()}, it was ${GUESS_LABELS[actual].toLowerCase()}.`}{" "}
+      {strong} of {total} requirements are a strong match.
+    </p>
   );
 }
 
