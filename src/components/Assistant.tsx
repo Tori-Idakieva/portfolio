@@ -144,7 +144,7 @@ function MatchPanel() {
       {result && (
         <div className="match-result" aria-live="polite">
           <p className="match-summary">{result.summary}</p>
-          <ol className="reqs">
+          <ol className="reqs" tabIndex={0} aria-label="Requirements">
             {result.requirements.map((r, i) => (
               <li key={i} data-strength={r.strength}>
                 <span className="strength">{r.strength === "strong" ? "Strong" : r.strength === "partial" ? "Partial" : "Gap"}</span>
