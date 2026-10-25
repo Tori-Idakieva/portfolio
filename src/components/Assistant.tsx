@@ -143,14 +143,20 @@ function MatchPanel() {
       {notice && <Notice reason={notice} />}
       {result && (
         <div className="match-result" aria-live="polite">
-          <p className="match-summary">{result.summary}</p>
+          <p className="match-summary">
+            <Cited text={result.summary} />
+          </p>
           <ol className="reqs" tabIndex={0} aria-label="Requirements">
             {result.requirements.map((r, i) => (
               <li key={i} data-strength={r.strength}>
                 <span className="strength">{r.strength === "strong" ? "Strong" : r.strength === "partial" ? "Partial" : "Gap"}</span>
                 <div>
-                  <p className="req">{r.requirement}</p>
-                  <p>{r.explanation}</p>
+                  <p className="req">
+                    <Cited text={r.requirement} />
+                  </p>
+                  <p>
+                    <Cited text={r.explanation} />
+                  </p>
                   {r.evidence.length > 0 && (
                     <p className="req-evidence">
                       {r.evidence.map((id) => (
