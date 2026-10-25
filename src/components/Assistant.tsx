@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { evidenceById, type Role } from "@/content/profile";
 import { CUT_MARKER, INPUT_LIMITS, RECOVERABLE, UNAVAILABLE_MESSAGES } from "@/lib/shared";
 import type { MatchOutput } from "@/lib/ai";
+import { MatchChart, ScrollHint, STRENGTH_LABELS } from "./MatchChart";
 import { GUESS_LABELS, guessVerdict, MatchLoading, type Guess } from "./MatchLoading";
 
 type Unavailable = { unavailable: string };
@@ -99,6 +100,17 @@ function MatchPanel() {
   const [notice, setNotice] = useState<string | null>(null);
   const [guess, setGuess] = useState<Guess | null>(null);
 
+  // Scrolls the requirements box (not the page) to one requirement and flashes it.
+  function showRequirement(i: number) {
+    const item = document.querySelectorAll<HTMLElement>(".reqs > li")[i];
+    const list = item?.parentElement;
+    if (!item || !list) return;
+    list.scrollTo({ top: item.offsetTop - list.offsetTop, behavior: "smooth" });
+    item.classList.remove("req-flash");
+    void item.offsetWidth;
+    item.classList.add("req-flash");
+  }
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setGuess(null);
@@ -151,30 +163,35 @@ function MatchPanel() {
           <p className="match-summary">
             <Cited text={result.summary} />
           </p>
-          <ol className="reqs" tabIndex={0} aria-label="Requirements">
-            {result.requirements.map((r, i) => (
-              <li key={i} data-strength={r.strength}>
-                <span className="strength">{r.strength === "strong" ? "Strong" : r.strength === "partial" ? "Partial" : "Gap"}</span>
-                <div>
-                  <p className="req">
-                    <Cited text={r.requirement} />
-                  </p>
-                  <p>
-                    <Cited text={r.explanation} />
-                  </p>
-                  {r.evidence.length > 0 && (
-                    <p className="req-evidence">
-                      {r.evidence.map((id) => (
-                        <a key={id} className="cite" href={`#${id}`}>
-                          {evidenceById.get(id)?.title}
-                        </a>
-                      ))}
-                    </p>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ol>
+          <MatchChart result={result} onPick={showRequirement} />
+          <ScrollHint label="More requirements">
+            {(ref) => (
+              <ol className="reqs" tabIndex={0} aria-label="Requirements" ref={ref}>
+                {result.requirements.map((r, i) => (
+                  <li key={i} data-strength={r.strength}>
+                    <span className="strength">{STRENGTH_LABELS[r.strength]}</span>
+                    <div>
+                      <p className="req">
+                        <Cited text={r.requirement} />
+                      </p>
+                      <p>
+                        <Cited text={r.explanation} />
+                      </p>
+                      {r.evidence.length > 0 && (
+                        <p className="req-evidence">
+                          {r.evidence.map((id) => (
+                            <a key={id} className="cite" href={`#${id}`}>
+                              {evidenceById.get(id)?.title}
+                            </a>
+                          ))}
+                        </p>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </ScrollHint>
         </div>
       )}
     </form>
