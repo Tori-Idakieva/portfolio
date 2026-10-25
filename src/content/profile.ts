@@ -522,7 +522,7 @@ export const timeline: { org: string; match: string; label: string; from: number
   { org: "Isode", match: "Isode", label: "Software Engineer", from: 2016, to: 2022, lane: "work", dates: "2016 to 2022", highlights: ["Frontend for Harrier, a military-grade email client", "S/MIME, accessibility and internationalisation", "Test automation made 50% more reliable"] },
   { org: "ANDigital", match: "ANDigital", label: "Product Developer", from: 2022.4, to: 2024.95, lane: "work", dates: "May 2022 to Dec 2024", highlights: ["Two award-winning client apps", "Security champion for internal and client teams", "Ran React Native and security upskilling"] },
   { org: "Vynrr", match: "Vynrr", label: "Part-time consulting, side work", from: 2024.4, to: 2025.95, lane: "side", dates: "May 2024 to Dec 2025", highlights: ["Part-time, alongside full-time roles", "Took a founder's idea to an investor-ready PoC"] },
-  { org: "BlackRock", match: "BlackRock", label: "Product Engineer", from: 2024.95, to: 2026.65, lane: "work", dates: "Dec 2024 to Aug 2026", highlights: ["Two AI products built with legal teams", "Power BI replaced with a custom React UI", "10th of hundreds in the internal CTF"] },
+  { org: "BlackRock", match: "BlackRock", label: "Associate Applications Engineer (Product Engineer)", from: 2024.95, to: 2026.65, lane: "work", dates: "Dec 2024 to Aug 2026", highlights: ["Two AI products built with legal teams", "Power BI replaced with a custom React UI", "10th of hundreds in the internal CTF"] },
   { org: "Abertay", match: "Abertay", label: "MSc Ethical Hacking and Cybersecurity", from: 2025.7, to: 2026.8, lane: "study", dates: "2025 to present", highlights: ["Part-time, outside work hours", "Pentesting, secure web engineering, malware analysis"] },
 ];
 
