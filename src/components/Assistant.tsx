@@ -69,8 +69,15 @@ function Notice({ reason }: { reason: string }) {
 // The AI is a side door, not the front door: one compact section with two tabs.
 export function Assistant({ role }: { role: Role }) {
   const [tab, setTab] = useState<"ask" | "match">("ask");
+  // Match results take the full width so the job ad can sit beside them.
+  const [wide, setWide] = useState(false);
   return (
-    <section className="assistant wrap" id="assistant" aria-labelledby="assistant-title">
+    <section
+      className="assistant wrap"
+      id="assistant"
+      aria-labelledby="assistant-title"
+      data-wide={wide && tab === "match"}
+    >
       <div className="assistant-head">
         <p className="label">Quick answers</p>
         <h2 id="assistant-title">Ask an AI about Viktoria</h2>
@@ -87,18 +94,33 @@ export function Assistant({ role }: { role: Role }) {
             Match a job ad
           </button>
         </div>
-        <div role="tabpanel">{tab === "ask" ? <AskPanel role={role} /> : <MatchPanel />}</div>
+        <div role="tabpanel">{tab === "ask" ? <AskPanel role={role} /> : <MatchPanel onResult={setWide} />}</div>
       </div>
     </section>
   );
 }
 
-function MatchPanel() {
+function MatchPanel({ onResult }: { onResult: (shown: boolean) => void }) {
   const [job, setJob] = useState("");
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<MatchOutput | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [guess, setGuess] = useState<Guess | null>(null);
+  const [matched, setMatched] = useState("");
+  const [adOpen, setAdOpen] = useState(true);
+  const jobRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => onResult(!!result), [result, onResult]);
+  useEffect(() => () => onResult(false), [onResult]);
+
+  // Back to the form. The pasted ad stays unless the visitor asks for a fresh start.
+  function reset(clearJob: boolean) {
+    setResult(null);
+    setGuess(null);
+    setNotice(null);
+    if (clearJob) setJob("");
+    requestAnimationFrame(() => jobRef.current?.focus());
+  }
 
   // Scrolls the requirements box (not the page) to one requirement and flashes it.
   function showRequirement(i: number) {
@@ -129,8 +151,12 @@ function MatchPanel() {
         body: JSON.stringify({ mode: "match", job }),
       });
       const data = (await res.json()) as { match?: MatchOutput } & Partial<Unavailable>;
-      if (data.match) setResult(data.match);
-      else setNotice(data.unavailable ?? "upstream");
+      if (data.match) {
+        setMatched(job);
+        // Side by side on wide screens; on phones the ad starts folded so the results come first.
+        setAdOpen(window.matchMedia("(min-width: 1000px)").matches);
+        setResult(data.match);
+      } else setNotice(data.unavailable ?? "upstream");
     } catch {
       setNotice("upstream");
     } finally {
@@ -140,58 +166,86 @@ function MatchPanel() {
 
   return (
     <form className="match" onSubmit={submit}>
-      <label htmlFor="job">Paste a job description to see how Viktoria matches each requirement</label>
-      <textarea
-        id="job"
-        value={job}
-        onChange={(e) => setJob(e.target.value)}
-        maxLength={INPUT_LIMITS.jobChars}
-        rows={5}
-        placeholder="We're looking for a senior engineer who…"
-      />
-      <div className="form-row">
-        <button type="submit" className="btn" disabled={busy || job.trim().length < INPUT_LIMITS.jobMinChars}>
-          {busy ? "Matching…" : "Match this role"}
-        </button>
-        <span className="hint">{job.length}/{INPUT_LIMITS.jobChars}. Sent to Claude to answer, not stored by this site.</span>
-      </div>
+      {!result && (
+        <>
+          <label htmlFor="job">Paste a job description to see how Viktoria matches each requirement</label>
+          <textarea
+            id="job"
+            ref={jobRef}
+            value={job}
+            onChange={(e) => setJob(e.target.value)}
+            maxLength={INPUT_LIMITS.jobChars}
+            rows={5}
+            placeholder="We're looking for a senior engineer who…"
+          />
+          <div className="form-row">
+            <button type="submit" className="btn" disabled={busy || job.trim().length < INPUT_LIMITS.jobMinChars}>
+              {busy ? "Matching…" : "Match this role"}
+            </button>
+            <span className="hint">
+              {job.length}/{INPUT_LIMITS.jobChars}. Sent to Claude to answer, not stored by this site.
+            </span>
+            {job && !busy && (
+              <button type="button" className="link-btn" onClick={() => reset(true)}>
+                Clear
+              </button>
+            )}
+          </div>
+        </>
+      )}
       {busy && <MatchLoading job={job} guess={guess} onGuess={setGuess} />}
       {notice && <Notice reason={notice} />}
       {result && (
-        <div className="match-result" aria-live="polite">
-          {guess && <GuessResult guess={guess} result={result} />}
-          <p className="match-summary">
-            <Cited text={result.summary} />
-          </p>
-          <MatchChart result={result} onPick={showRequirement} />
-          <ScrollHint label="More requirements">
-            {(ref) => (
-              <ol className="reqs" tabIndex={0} aria-label="Requirements" ref={ref}>
-                {result.requirements.map((r, i) => (
-                  <li key={i} data-strength={r.strength}>
-                    <span className="strength">{STRENGTH_LABELS[r.strength]}</span>
-                    <div>
-                      <p className="req">
-                        <Cited text={r.requirement} />
-                      </p>
-                      <p>
-                        <Cited text={r.explanation} />
-                      </p>
-                      {r.evidence.length > 0 && (
-                        <p className="req-evidence">
-                          {r.evidence.map((id) => (
-                            <a key={id} className="cite" href={`#${id}`}>
-                              {evidenceById.get(id)?.title}
-                            </a>
-                          ))}
+        <div className="match-compare">
+          <details className="job-ad" open={adOpen} onToggle={(e) => setAdOpen(e.currentTarget.open)}>
+            <summary>The job ad</summary>
+            <div className="job-ad-text" tabIndex={0} aria-label="The job ad you matched">
+              {matched}
+            </div>
+          </details>
+          <div className="match-result" aria-live="polite">
+            <div className="match-actions">
+              <button type="button" className="chip" onClick={() => reset(false)}>
+                Edit the job ad
+              </button>
+              <button type="button" className="chip" onClick={() => reset(true)}>
+                Clear and start again
+              </button>
+            </div>
+            {guess && <GuessResult guess={guess} result={result} />}
+            <p className="match-summary">
+              <Cited text={result.summary} />
+            </p>
+            <MatchChart result={result} onPick={showRequirement} />
+            <ScrollHint label="More requirements">
+              {(ref) => (
+                <ol className="reqs" tabIndex={0} aria-label="Requirements" ref={ref}>
+                  {result.requirements.map((r, i) => (
+                    <li key={i} data-strength={r.strength}>
+                      <span className="strength">{STRENGTH_LABELS[r.strength]}</span>
+                      <div>
+                        <p className="req">
+                          <Cited text={r.requirement} />
                         </p>
-                      )}
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            )}
-          </ScrollHint>
+                        <p>
+                          <Cited text={r.explanation} />
+                        </p>
+                        {r.evidence.length > 0 && (
+                          <p className="req-evidence">
+                            {r.evidence.map((id) => (
+                              <a key={id} className="cite" href={`#${id}`}>
+                                {evidenceById.get(id)?.title}
+                              </a>
+                            ))}
+                          </p>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </ScrollHint>
+          </div>
         </div>
       )}
     </form>
