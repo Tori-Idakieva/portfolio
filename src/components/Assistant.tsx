@@ -140,12 +140,15 @@ function MatchPanel({ onResult }: { onResult: (shown: boolean) => void }) {
     focusJob();
   }
 
-  // Scrolls the requirements box (not the page) to one requirement and flashes it.
+  // Scrolls the results box (not the page) to one requirement, clear of the pinned chart, and flashes it.
   function showRequirement(i: number) {
     const item = document.querySelectorAll<HTMLElement>(".reqs > li")[i];
-    const list = item?.parentElement;
-    if (!item || !list) return;
-    list.scrollTo({ top: item.offsetTop - list.offsetTop, behavior: "smooth" });
+    const box = item?.closest<HTMLElement>(".match-scroll");
+    if (!item || !box) return;
+    const head = box.querySelector<HTMLElement>(".match-head");
+    const pinned = head && getComputedStyle(head).position === "sticky" ? head.offsetHeight : 0;
+    // Offsets rather than client rects: the page is CSS-zoomed on big screens and rects come back scaled.
+    box.scrollTo({ top: item.offsetTop - pinned, behavior: "smooth" });
     item.classList.remove("req-flash");
     void item.offsetWidth;
     item.classList.add("req-flash");
@@ -259,37 +262,41 @@ function MatchPanel({ onResult }: { onResult: (shown: boolean) => void }) {
         ) : (
           result && (
             <>
-              {guess && <GuessResult guess={guess} result={result} />}
-              <p className="match-summary">
-                <Cited text={result.summary} />
-              </p>
-              <MatchChart result={result} onPick={showRequirement} />
               <ScrollHint label="More requirements">
                 {(ref) => (
-                  <ol className="reqs" tabIndex={0} aria-label="Requirements" ref={ref}>
-                    {result.requirements.map((r, i) => (
-                      <li key={i} data-strength={r.strength}>
-                        <span className="strength">{STRENGTH_LABELS[r.strength]}</span>
-                        <div>
-                          <p className="req">
-                            <Cited text={r.requirement} />
-                          </p>
-                          <p>
-                            <Cited text={r.explanation} />
-                          </p>
-                          {r.evidence.length > 0 && (
-                            <p className="req-evidence">
-                              {r.evidence.map((id) => (
-                                <a key={id} className="cite" href={`#${id}`}>
-                                  {evidenceById.get(id)?.title}
-                                </a>
-                              ))}
+                  <div className="match-scroll" ref={ref} tabIndex={0} aria-label="Match results">
+                    <div className="match-head">
+                      <MatchChart result={result} onPick={showRequirement} />
+                    </div>
+                    {guess && <GuessResult guess={guess} result={result} />}
+                    <p className="match-summary">
+                      <Cited text={result.summary} />
+                    </p>
+                    <ol className="reqs" aria-label="Requirements">
+                      {result.requirements.map((r, i) => (
+                        <li key={i} data-strength={r.strength}>
+                          <span className="strength">{STRENGTH_LABELS[r.strength]}</span>
+                          <div>
+                            <p className="req">
+                              <Cited text={r.requirement} />
                             </p>
-                          )}
-                        </div>
-                      </li>
-                    ))}
-                  </ol>
+                            <p>
+                              <Cited text={r.explanation} />
+                            </p>
+                            {r.evidence.length > 0 && (
+                              <p className="req-evidence">
+                                {r.evidence.map((id) => (
+                                  <a key={id} className="cite" href={`#${id}`}>
+                                    {evidenceById.get(id)?.title}
+                                  </a>
+                                ))}
+                              </p>
+                            )}
+                          </div>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
                 )}
               </ScrollHint>
             </>

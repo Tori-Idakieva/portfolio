@@ -620,7 +620,7 @@ textarea:focus, .ask-form input:focus { border-color: var(--accent); outline: no
 .cite:hover { text-decoration: underline; }
 .assistant[data-wide="true"] { grid-template-columns: minmax(0, 1fr); gap: 20px; }
 .match-compare { display: grid; gap: 20px; }
-.match-result { min-width: 0; }
+.match-result { min-width: 0; display: grid; gap: 12px; }
 .match-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .job-ad { min-width: 0; }
 .job-ad summary { cursor: pointer; font-weight: 600; font-size: .95rem; padding: 4px 0; width: fit-content; }
@@ -643,10 +643,13 @@ textarea:focus, .ask-form input:focus { border-color: var(--accent); outline: no
   .job-ad[open] .job-ad-text { height: calc(var(--mc-h) - 42px); max-height: none; }
   .job-edit { grid-template-rows: auto minmax(0, 1fr) auto; align-content: stretch; }
   .job-edit textarea { height: 100%; resize: none; }
-  .match-compare .match-result { display: flex; flex-direction: column; min-height: 0; overflow-y: auto; scrollbar-width: thin; }
+  .match-compare .match-result { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
   .match-compare .match-result > * { flex: none; }
-  .match-compare .scroll-hint { flex: 1 1 auto; min-height: 160px; display: flex; flex-direction: column; }
-  .match-compare .reqs { flex: 1 1 auto; min-height: 0; max-height: none; }
+  .match-compare .scroll-hint { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+  .match-compare .match-scroll { flex: 1 1 auto; min-height: 0; max-height: none; }
+  /* The chart stays pinned while the summary and requirements scroll under it. */
+  .match-head { position: sticky; top: 0; z-index: 1; padding-bottom: 4px; border-bottom: 1px solid var(--line); }
+  .match-head .mc { margin-bottom: 8px; }
 }
 .link-btn { background: none; border: 0; padding: 0; font: inherit; font-size: .9rem; color: var(--ink-2); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .link-btn:hover { color: var(--ink); }
@@ -677,12 +680,14 @@ textarea:focus, .ask-form input:focus { border-color: var(--accent); outline: no
 .ml-verdict { margin: 12px 0 0; padding: 10px 14px; border-radius: 8px; font-size: .92rem; background: color-mix(in srgb, var(--ink-2) 10%, transparent); }
 .ml-verdict[data-right="true"] { background: color-mix(in srgb, var(--good) 14%, transparent); }
 @media (prefers-reduced-motion: reduce) { .ml-bar span { animation: none; } }
-.reqs {
-  list-style: none; padding: 0 6px 0 0; margin: 0; display: grid; gap: 8px;
-  max-height: min(55vh, 520px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin;
-  border-bottom: 1px solid var(--line);
+/* Results scroll as one column inside the panel, so a long list never takes over the page. */
+.match-scroll {
+  position: relative; max-height: min(70svh, 640px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin;
+  padding-right: 8px; border-bottom: 1px solid var(--line);
 }
-.reqs:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 4px; }
+.match-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 4px; }
+.match-head { background: var(--raised); }
+.reqs { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
 .reqs li { display: grid; grid-template-columns: 76px 1fr; gap: 14px; padding: 12px 0; border-top: 1px solid var(--line); }
 .reqs p { margin: 0; }
 .req { font-weight: 600; }
@@ -737,7 +742,7 @@ textarea:focus, .ask-form input:focus { border-color: var(--accent); outline: no
   border: 1px solid var(--ink); background: var(--ink); color: var(--bg); font: inherit; font-size: .85rem; font-weight: 600;
   box-shadow: 0 4px 14px rgb(0 0 0 / .12); cursor: pointer;
 }
-.scroll-more:hover { background: var(--ink-2); border-color: var(--ink-2); }
+@media (hover: hover) { .scroll-more:hover { background: var(--ink-2); border-color: var(--ink-2); } }
 .scroll-more:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .scroll-more span { animation: nudge 1.6s ease-in-out infinite; }
 @keyframes nudge { 50% { transform: translateY(2px); } }

@@ -80,10 +80,10 @@ export function ScrollHint({
   children,
   label,
 }: {
-  children: (ref: React.RefObject<HTMLOListElement | null>) => ReactNode;
+  children: (ref: React.RefObject<HTMLDivElement | null>) => ReactNode;
   label: string;
 }) {
-  const ref = useRef<HTMLOListElement | null>(null);
+  const ref = useRef<HTMLDivElement | null>(null);
   const [more, setMore] = useState(false);
 
   useEffect(() => {
