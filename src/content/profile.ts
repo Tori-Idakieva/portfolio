@@ -54,11 +54,11 @@ export const inOwnWords: { topic: string; text: string }[] = [
 ];
 
 export const pitches: Record<Role, string> = {
-  all: "Viktoria has spent ten years turning ambiguous requirements into shipped software: a military-grade email client, two award-winning consumer apps, AI tools that cut legal procedures by at least 80%, and an investor-ready hardware PoC. Viktoria is also completing an MSc in Ethical Hacking and Cybersecurity, so security is built in rather than bolted on. Pick a role above to see the experience that matters for it.",
+  all: "Viktoria has spent ten years turning ambiguous requirements into shipped software: a military-grade email client, two award-winning consumer apps, an AI term-extraction tool that cut lawyers' extraction time by about 80%, and an investor-ready hardware PoC. Viktoria is also completing an MSc in Ethical Hacking and Cybersecurity, so security is built in rather than bolted on. Pick a role above to see the experience that matters for it.",
   frontend:
     "Viktoria is a React and TypeScript engineer with a decade of production frontend work. At BlackRock, Viktoria replaced a Power BI app with a custom React and Highcharts reporting interface that improved both visualisation and performance, and closed gaps between Figma and the component library. Earlier work spans an accessible, internationalised email client and two award-winning apps.",
   product:
-    "Viktoria works best between users and code. At BlackRock, Viktoria ran user-led development on two AI greenfield products (a POC and an MVP) that streamlined legal procedures by at least 80% in internal testing. As a part-time technical lead consultant for Vynrr, Viktoria took a founder's concept to a working PoC that raised investor interest and the company's valuation.",
+    "Viktoria works best between users and code. At BlackRock, Viktoria ran user-led development on two AI greenfield products (a POC and an MVP), including a legal-document term-extraction tool that cut per-term extraction time by about 80% in testing with in-house lawyers. As a part-time technical lead consultant for Vynrr, Viktoria took a founder's concept to a working PoC that raised investor interest and the company's valuation.",
   fullstack:
     "Viktoria owns features end to end: planning, API design with backend teams, frontend, test automation and CI/CD. At Isode, Viktoria built and maintained automated testing systems from server config generation to CI, improving reliability and maintenance efficiency by 50%. In part-time consulting for Vynrr, Viktoria defined the API and hardware requirements behind a working PoC.",
   consultant:
@@ -95,11 +95,11 @@ export const evidence: Evidence[] = [
     id: "blk-ai-greenfield",
     kind: "work",
     title: "Two AI products for legal workflows",
-    short: "Took two AI products for legal teams from idea to MVP. User testing showed procedures at least 80% faster.",
+    short: "Took two AI products for legal teams from idea to MVP, including a term-extraction tool that cut extraction time by about 80%.",
     org: "BlackRock",
     period: "2024 to 2026",
     summary:
-      "Delivered two AI-based greenfield projects, a POC and an MVP, through user-led development. Internal user testing showed legal procedures streamlined by at least 80%.",
+      "Delivered two AI-based greenfield projects, a POC and an MVP, through user-led development. Owned the frontend, UX and full-stack features of an AI-powered legal-document term-extraction tool, which cut per-term extraction time by about 80% in user testing with in-house lawyers.",
     stack: ["React", "TypeScript", "Python"],
     weight: { frontend: 2, product: 3, fullstack: 2, consultant: 2, appsec: 1 },
     why: {
@@ -124,6 +124,38 @@ export const evidence: Evidence[] = [
       frontend: "Data-heavy UI, charting and performance work in production.",
       product: "Chose to rebuild because the tool limited what users needed.",
       fullstack: "Worked from the UI down to the Python endpoints and the Snowflake data.",
+    },
+  },
+  {
+    id: "blk-shared-components",
+    kind: "work",
+    title: "Shared components other teams build on",
+    short: "Built common components used across several products, instead of one-off versions for each.",
+    org: "BlackRock",
+    period: "2024 to 2026",
+    summary:
+      "Built common components shared across multiple products, giving other teams reusable building blocks instead of one-off implementations.",
+    stack: ["React", "TypeScript"],
+    weight: { frontend: 3, product: 1, fullstack: 2, consultant: 1, appsec: 0 },
+    why: {
+      frontend: "Designs components for other engineers to reuse, not only for one screen.",
+      fullstack: "Thinks about the platform other teams depend on.",
+    },
+  },
+  {
+    id: "blk-feature-ownership",
+    kind: "work",
+    title: "Features owned from user feedback to deployment",
+    short: "Gathered feedback from users and clients, then owned features end to end with AI-accelerated workflows.",
+    org: "BlackRock",
+    period: "2024 to 2026",
+    summary:
+      "Gathered feedback from internal users and clients to understand their workflow problems and steer product iterations. Owned features end to end, from planning to deployment, contributed to internal AI workflows, and used AI-accelerated development daily for feature planning, documentation, PR review and vulnerability triage.",
+    weight: { frontend: 1, product: 3, fullstack: 3, consultant: 2, appsec: 1 },
+    why: {
+      product: "Starts from what users struggle with and follows it through to release.",
+      fullstack: "Takes a feature from plan to production without hand-offs.",
+      consultant: "Turns user and client feedback into the next iteration.",
     },
   },
   {
@@ -189,6 +221,21 @@ export const evidence: Evidence[] = [
       "Organised an internal hackathon with directors and VPs, doubling the region's entries from the previous year.",
     weight: { frontend: 0, product: 2, fullstack: 1, consultant: 1, appsec: 0 },
     why: { product: "Rallies people around new ideas, not only code." },
+  },
+  {
+    id: "and-client-consulting",
+    kind: "work",
+    title: "Client consulting, from greenfield to legacy",
+    short: "Worked directly with client stakeholders to clarify requirements, find bottlenecks and propose improvements.",
+    org: "ANDigital",
+    period: "2022 to 2024",
+    summary:
+      "Worked directly with client stakeholders across a range of projects, from greenfield builds to legacy maintenance and migration: clarifying requirements, identifying bottlenecks and proposing improvements.",
+    weight: { frontend: 1, product: 2, fullstack: 2, consultant: 3, appsec: 0 },
+    why: {
+      consultant: "Client-facing across new builds and legacy migrations.",
+      product: "Gets to the real requirement before building.",
+    },
   },
   {
     id: "and-awards",
@@ -281,6 +328,34 @@ export const evidence: Evidence[] = [
       frontend: "Six years of complex, accessible UI for demanding users.",
       appsec: "Secure messaging features where mistakes matter.",
       fullstack: "Shaped API contracts together with backend engineers.",
+    },
+  },
+  {
+    id: "isode-shared-components",
+    kind: "work",
+    title: "Common components across Isode's products",
+    short: "Built shared components that kept features consistent across Isode's products.",
+    org: "Isode",
+    period: "2016 to 2022",
+    summary:
+      "Created common components shared across Isode's products, giving teams reusable building blocks that kept features consistent from one product to the next.",
+    stack: ["React", "JavaScript"],
+    weight: { frontend: 3, product: 1, fullstack: 1, consultant: 0, appsec: 0 },
+    why: { frontend: "Long experience building reusable UI for a product family." },
+  },
+  {
+    id: "isode-ambiguous-requirements",
+    kind: "work",
+    title: "From vague requirements to release-ready features",
+    short: "Investigated needs, sketched designs and built them, helping win contract renewals and new business.",
+    org: "Isode",
+    period: "2016 to 2022",
+    summary:
+      "Turned ambiguous requirements into release-ready features by investigating what was needed, creating rough designs and building them, supporting contract renewals and new business wins.",
+    weight: { frontend: 2, product: 3, fullstack: 1, consultant: 2, appsec: 0 },
+    why: {
+      product: "Comfortable when the brief is unclear; works out what to build.",
+      consultant: "The features helped keep and win customer contracts.",
     },
   },
   {
