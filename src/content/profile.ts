@@ -36,6 +36,10 @@ export const person = {
 // Viktoria's own answers to questions recruiters ask. The AI uses these when they come up.
 export const inOwnWords: { topic: string; text: string }[] = [
   {
+    topic: "How Viktoria works with AI coding tools",
+    text: "Viktoria uses coding agents (Windsurf with Claude models, and Claude Code) across the full development lifecycle, from exploring unfamiliar codebases and planning to building, testing and code review, with human verification before anything ships.",
+  },
+  {
     topic: "Remote, hybrid or office work",
     text: "Viktoria has no strong preference but enjoys a hybrid environment. It depends on the role, the team and what the position needs: some work is easier done remotely, and some needs time on site.",
   },
@@ -79,6 +83,8 @@ export type Evidence = {
   period: string;
   summary: string;
   stack?: string[];
+  // Extra CV detail for the AI only; not shown on the page.
+  detail?: string;
   link?: string;
   // Public pages about the work, shown as "Read more" links.
   sources?: { label: string; href: string }[];
@@ -101,12 +107,47 @@ export const evidence: Evidence[] = [
     summary:
       "Delivered two AI-based greenfield projects, a POC and an MVP, through user-led development. Owned the frontend, UX and full-stack features of an AI-powered legal-document term-extraction tool, which cut per-term extraction time by about 80% in user testing with in-house lawyers.",
     stack: ["React", "TypeScript", "Python"],
+    detail:
+      "The two products (one POC, one MVP) handled different types of legal documents and were built working directly with in-house lawyers. The ~80% cut in per-term extraction time was measured by timing lawyers on the old process against the new one. The MVP reached production, pending compliance approval. See blk-ai-review for the review experience Viktoria owned.",
     weight: { frontend: 2, product: 3, fullstack: 2, consultant: 2, appsec: 1 },
     why: {
       consultant: "Ran discovery with non-technical stakeholders.",
       product: "Found the workflow pain with users and proved the outcome with numbers.",
       fullstack: "Owned both products from planning to deployment.",
       frontend: "Built the interfaces people used to work with the AI.",
+    },
+  },
+  {
+    id: "blk-ai-review",
+    kind: "work",
+    title: "A review screen lawyers could trust",
+    short: "Owned the human-in-the-loop review flow for AI-extracted terms, replacing four separate apps with one screen.",
+    org: "BlackRock",
+    period: "2024 to 2026",
+    summary:
+      "Owned the review experience end to end: a document viewer that displayed, scaled and highlighted up to five AI-suggested source sections per term, a form where lawyers accepted or corrected each AI-extracted value, and the save and CSV-template export flow. Designed for human verification rather than blind trust in AI output, given sensitive data and high-value figures, and consolidated four separate applications from the lawyers' workflow into one uncluttered screen, tracking task time and click count against the old process.",
+    stack: ["React", "TypeScript", "Python"],
+    weight: { frontend: 3, product: 3, fullstack: 2, consultant: 1, appsec: 1 },
+    why: {
+      frontend: "A complex document viewer and review form, built for precision work.",
+      product: "Designed AI output to be checked, and measured time and clicks against the old way.",
+      fullstack: "Owned the flow from viewer to save and export.",
+    },
+  },
+  {
+    id: "blk-coding-agents",
+    kind: "work",
+    title: "Coding agents across the whole delivery cycle",
+    short: "Used Windsurf and Claude agents from ticket to code review, verifying every AI change before it shipped.",
+    org: "BlackRock",
+    period: "2024 to 2026",
+    summary:
+      "Used spec-driven development with Windsurf, Claude agents and internal AI workflows across the full development lifecycle: investigating tickets, planning and designing solutions, implementing them, writing and running tests, and reviewing pull requests. Verified all AI output before it shipped.",
+    stack: ["Windsurf", "Claude", "Spec-driven development"],
+    weight: { frontend: 1, product: 2, fullstack: 3, consultant: 1, appsec: 1 },
+    why: {
+      fullstack: "Uses AI to move faster across the stack without skipping review.",
+      product: "Ships quicker while keeping a human check on quality.",
     },
   },
   {
@@ -117,7 +158,7 @@ export const evidence: Evidence[] = [
     org: "BlackRock",
     period: "2024 to 2026",
     summary:
-      "Migrated a Power BI application to React to remove custom reporting limits, delivering a charting interface that improved data visualisation and overall performance. Edited the Python endpoints that feed it, and investigated the underlying Snowflake data to make sure each endpoint returned the correct information.",
+      "Migrated a Power BI application to React to remove custom reporting limits, delivering a charting interface that improved data visualisation and overall performance. Owned the Python endpoints that feed it, and worked with the data team to make sure each endpoint returned the correct data from Snowflake.",
     stack: ["React", "TypeScript", "Highcharts", "Python", "Snowflake"],
     weight: { frontend: 3, product: 2, fullstack: 2, consultant: 1, appsec: 0 },
     why: {
@@ -136,6 +177,8 @@ export const evidence: Evidence[] = [
     summary:
       "Built common components shared across multiple products, giving other teams reusable building blocks instead of one-off implementations.",
     stack: ["React", "TypeScript"],
+    detail:
+      "When AI-generated Figma Make designs combined incompatible library components, Viktoria worked with the designers to adjust the design and contributed fixes back to the shared component library.",
     weight: { frontend: 3, product: 1, fullstack: 2, consultant: 1, appsec: 0 },
     why: {
       frontend: "Designs components for other engineers to reuse, not only for one screen.",
@@ -162,11 +205,11 @@ export const evidence: Evidence[] = [
     id: "blk-vuln-triage",
     kind: "work",
     title: "Vulnerability triage and resolution",
-    short: "Triages and fixes flagged vulnerabilities across the team's applications.",
+    short: "Cleared 20 P2/P3 vulnerabilities in unfamiliar repositories in under two months, alongside product work.",
     org: "BlackRock",
     period: "2024 to 2026",
     summary:
-      "Triaged and resolved flagged vulnerabilities across owned applications, and used AI-accelerated workflows for planning, documentation and PR review.",
+      "Cleared 20 P2/P3 vulnerabilities in unfamiliar, shared-ownership repositories in under two months, alongside product work. Used AI to trace each issue and confirm whether it was exploitable, then designed and implemented the fix.",
     weight: { frontend: 1, product: 0, fullstack: 1, consultant: 0, appsec: 3 },
     why: { appsec: "Day-to-day remediation of real findings in a regulated enterprise." },
   },
@@ -193,7 +236,7 @@ export const evidence: Evidence[] = [
     short: "Placed 10th out of hundreds of teams in the internal capture the flag.",
     org: "BlackRock",
     period: "2024 to 2026",
-    summary: "Competed in BlackRock's internal capture the flag competition and placed 10th out of hundreds of teams.",
+    summary: "Competed in BlackRock's internal capture the flag competition in 2025 and placed 10th out of hundreds of teams.",
     weight: { frontend: 0, product: 0, fullstack: 1, consultant: 0, appsec: 3 },
     why: { appsec: "Hands-on offensive skills tested against hundreds of teams." },
   },
@@ -247,12 +290,30 @@ export const evidence: Evidence[] = [
     summary:
       "Delivered OneViu (HKB Technology Excellence Award for Retail app) and Wagamama Soul Club (MCA Hospitality Award), and created the training that onboarded three teams to Soul Club.",
     stack: ["React Native", "TypeScript", "React", "DatoCMS"],
+    detail: "See and-soul-club-backend for the backend and API work Viktoria owned on Wagamama Soul Club.",
     sources: [{ label: "AND Digital case study: Wagamama Soul Club", href: "https://and.digital/our-work/wagamama-soul-club" }],
     weight: { frontend: 3, product: 3, fullstack: 2, consultant: 3, appsec: 0 },
     why: {
       consultant: "Delivered award-winning work for two different clients.",
       frontend: "Consumer apps judged good enough to win industry awards.",
       product: "Shipped for real clients with real customers.",
+    },
+  },
+  {
+    id: "and-soul-club-backend",
+    kind: "work",
+    title: "Backend and API for Wagamama Soul Club",
+    short: "Owned the tRPC and Zod backend for profile, restaurant and table selection, and led the choice of tRPC.",
+    org: "ANDigital",
+    period: "2022 to 2024",
+    summary:
+      "On Wagamama Soul Club, owned the backend implementation and API integration with tRPC and Zod for features including profile information and restaurant and table selection. Led the decision to adopt tRPC after researching the options in a technical spike, and pair-programmed with junior developers building the frontend for these features.",
+    stack: ["tRPC", "Zod", "TypeScript"],
+    sources: [{ label: "AND Digital case study: Wagamama Soul Club", href: "https://and.digital/our-work/wagamama-soul-club" }],
+    weight: { frontend: 1, product: 1, fullstack: 3, consultant: 2, appsec: 0 },
+    why: {
+      fullstack: "Typed API design and backend ownership on an award-winning app.",
+      consultant: "Made and justified a technical decision for a client team.",
     },
   },
   {
@@ -264,6 +325,7 @@ export const evidence: Evidence[] = [
     period: "2022 to 2024",
     summary:
       "Acted as security champion for internal and client teams while working across legacy migrations and greenfield builds.",
+    detail: "As security champion, set up SonarQube on CI pipelines and created security upskilling material for colleagues.",
     weight: { frontend: 0, product: 0, fullstack: 1, consultant: 2, appsec: 3 },
     why: { consultant: "Raised the security bar inside client teams.", appsec: "Brought secure practices into internal and client delivery teams." },
   },
@@ -384,6 +446,8 @@ export const evidence: Evidence[] = [
     summary:
       "Part-time consulting alongside full-time roles. Worked directly with founders from concept to delivery: API and hardware requirements, a Figma prototype with a design team, and a working PoC whose investor demo raised interest and the company's valuation.",
     stack: ["React Native", "Figma"],
+    detail:
+      "Title: Technical Lead Consultant, remote, May 2024 to December 2025. Founder-facing: led technical decision-making, defined API and hardware requirements, shared progress continuously and refined the software around feedback and client needs. Worked with a product design team on a Figma prototype of the founders' concept, clarifying requirements and surfacing bottlenecks early. The PoC proved the invention was technically viable.",
     weight: { frontend: 1, product: 3, fullstack: 2, consultant: 3, appsec: 0 },
     why: {
       consultant: "Advised founders directly and turned their idea into something investors could see.",
@@ -498,6 +562,8 @@ export const skills: Record<"stack" | "practice" | "security" | "ai", Skill[]> =
     { name: "React Native", at: ["BlackRock", "ANDigital", "Vynrr"] },
     { name: "GraphQL", at: ["BlackRock"] },
     { name: "REST", at: ["BlackRock", "ANDigital"] },
+    { name: "tRPC", at: ["ANDigital"] },
+    { name: "Zod", at: ["ANDigital"] },
     { name: "WebSockets", at: ["Isode"] },
     { name: "D3.js", at: ["BlackRock", "ANDigital"] },
     { name: "Highcharts", at: ["BlackRock", "ANDigital"] },
@@ -511,6 +577,7 @@ export const skills: Record<"stack" | "practice" | "security" | "ai", Skill[]> =
     { name: "Playwright", at: ["BlackRock", "ANDigital"] },
     { name: "Cypress", at: ["Isode"] },
     { name: "Robot Framework", at: ["Isode"] },
+    { name: "Selenium", at: ["Isode"] },
     { name: "WCAG accessibility", at: ["ANDigital", "Isode"] },
     { name: "Figma", at: ["BlackRock", "Vynrr"] },
     { name: "Storybook", at: ["BlackRock"] },
@@ -529,7 +596,8 @@ export const skills: Record<"stack" | "practice" | "security" | "ai", Skill[]> =
     { name: "Windsurf", at: ["BlackRock"] },
     { name: "Copilot", at: ["BlackRock", "ANDigital"] },
     { name: "Figma Make", at: ["BlackRock"] },
-    { name: "Claude", at: ["CCDV-F"] },
+    { name: "Claude", at: ["BlackRock", "CCDV-F"] },
+    { name: "Claude Code", at: [] },
     { name: "Prompt engineering", at: ["CCDV-F"] },
     { name: "Agents and MCP", at: ["CCDV-F"] },
   ],

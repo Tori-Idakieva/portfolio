@@ -36,6 +36,7 @@ function profileText(): string {
     lines.push(
       `[${e.id}] ${e.title} | ${e.org} | ${e.period} | ${e.kind}\n  ${e.summary}` +
         (e.stack ? `\n  Stack: ${e.stack.join(", ")}` : "") +
+        (e.detail ? `\n  More detail: ${e.detail}` : "") +
         (e.link ? `\n  Link: ${e.link}` : "") +
         (e.sources ? `\n  Public sources: ${e.sources.map((x) => x.href).join(", ")}` : ""),
     );
