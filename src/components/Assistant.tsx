@@ -283,13 +283,19 @@ function MatchPanel({ onResult }: { onResult: (shown: boolean) => void }) {
                             <p>
                               <Cited text={r.explanation} />
                             </p>
-                            {r.evidence.length > 0 && (
+                            {r.evidence.some((id) => evidenceById.has(id)) && (
                               <p className="req-evidence">
-                                {r.evidence.map((id) => (
-                                  <a key={id} className="cite" href={`#${id}`}>
-                                    {evidenceById.get(id)?.title}
-                                  </a>
-                                ))}
+                                {/* Skip ids this page doesn't know, e.g. a tab opened before a content update. */}
+                                {r.evidence.map((id) => {
+                                  const item = evidenceById.get(id);
+                                  return (
+                                    item && (
+                                      <a key={id} className="cite" href={`#${id}`}>
+                                        {item.title}
+                                      </a>
+                                    )
+                                  );
+                                })}
                               </p>
                             )}
                           </div>
